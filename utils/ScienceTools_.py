@@ -206,11 +206,11 @@ def gtEbindef(ebinning_array, file_name='ebinning.txt'):
            ebinning_array: numpy array
                array in which the energy binnin is defined.
     """
-    if not os.path.exists(GD_OUT):
-        os.makedirs(GD_OUT)
-    txt_file_name = os.path.join(GD_OUT, file_name)
+    if not os.path.exists(X_OUT):
+        os.makedirs(X_OUT)
+    txt_file_name = os.path.join(X_OUT, file_name)
     txt_file = open(txt_file_name, 'w')
-    fits_file_name = os.path.join(GD_OUT, 
+    fits_file_name = os.path.join(X_OUT, 
                                   file_name.replace('.txt', '.fits'))
     for emin, emax in zip(ebinning_array[:-1], ebinning_array[1:]):
         txt_file.write('%.4f %.4f\n'%(emin, emax))
