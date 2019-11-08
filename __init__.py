@@ -1,6 +1,7 @@
 #!/usr/bin/env python                                                          #
 #                                                                              #
-# Autor: Michela Negro, University of Torino.                                  #
+# Autor: Michela Negro, GSFC/CRESST/UMBC    .                                  #
+# On behalf of the Fermi-LAT Collaboration.                                    #
 #                                                                              #
 # This program is free software; you can redistribute it and/or modify         #
 # it under the terms of the GNU GengReral Public License as published by       #
