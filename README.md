@@ -13,7 +13,7 @@ To use this package:
     function Xgam_env {
     echo 'Setting Xgam environment...'
     conda activate fermi
-    export PYTHONPATH=:/path/to/this/package/${PYTHONPATH}
+    export PYTHONPATH=:/path/to/this/package/:${PYTHONPATH}
     export PATH=/path/to/this/package/GammaDipole/bin:${PATH}
     export P8_DATA=/path/to/data_files
     echo 'done.'
