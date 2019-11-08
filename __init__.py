@@ -49,4 +49,4 @@ except:
 if __name__ == '__main__':
 	from Xgam.utils.logging_ import startmsg
 	startmsg()
-    print('X_ROOT: %s' % X_ROOT)
+	print('X_ROOT: %s' % X_ROOT)
