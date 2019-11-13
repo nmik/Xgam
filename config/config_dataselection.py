@@ -93,4 +93,6 @@ GTEXPCUBE2_DICT = {'infile': 'DEFAULT',
                    'cmap': 'DEFAULT',
                    'irfs': IRFS,
                    'outfile': 'DEFAULT',
+                   'ebinalg': 'FILE',
+              	   'ebinfile': EBINNING_FILE,
                    'clobber': 'no'}
