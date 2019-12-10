@@ -16,7 +16,8 @@ import numpy as np
 import healpy as hp
 from astropy.io import fits as pf
 from Xgam.utils.logging_ import logger
-from Xgam.utils.matplotlib_ import pyplot as plt
+import matplotlib.pyplot as plt
+from Xgam.utils.matplotlib_ import *
 
 def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
     """Returns the 'bad pixels' defined by the position of a source and a                                                                                             
@@ -75,18 +76,18 @@ def mask_extsrc(CAT_FILE, MASK_S_RAD, NSIDE):
         GLAT = EXT_SOURCES.field('GLAT')[i]
         if 'LMC' in NAME or 'CenA Lobes' in NAME:
         	logger.info('Masking %s with 10 deg radius disk...'%NAME)
-            x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
-            b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
-            BAD_PIX_SRC.append(b_pix)
-            radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(10))
-            BAD_PIX_SRC.extend(radintpix)
+        	x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
+        	b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+        	BAD_PIX_SRC.append(b_pix)
+        	radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(10))
+        	BAD_PIX_SRC.extend(radintpix)
         else:
-        	logger.info('Masking %s with 10 deg radius disk...'%NAME)
-            x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
-            b_pix = hp.pixelfunc.vec2pix(NSIDE, x, y, z)
-            BAD_PIX_SRC.append(b_pix)
-            radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(5))
-            BAD_PIX_SRC.extend(radintpix)
+        	logger.info('Masking %s with 5 deg radius disk...'%NAME)
+        	x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
+        	b_pix = hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+        	BAD_PIX_SRC.append(b_pix)
+        	radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(5))
+        	BAD_PIX_SRC.extend(radintpix)
     return BAD_PIX_SRC
     
 def mask_gp(MASK_GP_LAT, NSIDE):
