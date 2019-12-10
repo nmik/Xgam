@@ -26,8 +26,15 @@
 """
 
 import os
-import imp
+
+import ast
+import argparse
 import numpy as np
+from importlib.machinery import SourceFileLoader
+
+from Xgam import FT_DATA_FOLDER
+from Xgam.utils.ScienceTools_ import mergeft1, mergeft2
+from Xgam.utils.logging_ import logger, startmsg
 
 
 __description__ = 'Run a chain of Science Tools'
@@ -36,11 +43,6 @@ __description__ = 'Run a chain of Science Tools'
 """Command-line switches.
 """
 
-import ast
-import argparse
-from Xgam import FT_DATA_FOLDER
-from Xgam.utils.ScienceTools_ import mergeft1, mergeft2
-from Xgam.utils.logging_ import logger, startmsg
 
 formatter = argparse.ArgumentDefaultsHelpFormatter
 PARSER = argparse.ArgumentParser(description=__description__,
@@ -54,7 +56,7 @@ PARSER.add_argument('--gtltcube', type=ast.literal_eval, choices=[True, False],
 def get_var_from_file(filename):
     f = open(filename)
     global data
-    data = imp.load_source('data', '', f)
+    data = SourceFileLoader('data', filename).load_module()
     f.close()
 
 def mkSTanalysis(**kwargs):
