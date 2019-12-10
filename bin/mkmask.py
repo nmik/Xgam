@@ -22,16 +22,14 @@ import healpy as hp
 from astropy.io import fits as pf
 from importlib.machinery import SourceFileLoader
 
+from Xgam import X_CONFIG
+from Xgam.utils.logging_ import logger, startmsg
 
 __description__ = 'Produce masks fits files'
 
 
 """Command-line switches.                                                                                                                                             
 """
-
-from Xgam import X_CONFIG
-from Xgam.utils.logging_ import logger, startmsg
-
 
 formatter = argparse.ArgumentDefaultsHelpFormatter
 PARSER = argparse.ArgumentParser(description=__description__,
