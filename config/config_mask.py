@@ -20,11 +20,10 @@
 """
 
 import os
-from GRATools import GRATOOLS_CONFIG
 
-OUT_LABEL = 'Mask_gp25_src4FGL1'#bat'                                                                                                                                       
+OUT_LABEL = 'Mask_gp25_src4FGL1'                                                                                                                      
 
-NSIDE = 128#512                                                                                                                                                       
+NSIDE = 128                                                                                                                                                      
 SRC_CATALOG =  '/Users/mnegro/Documents/_FERMI/CATALOGS/gll_psc_v19_4FGL.fit'
 EXTSRC_CATALOG = '/Users/mnegro/Documents/_FERMI/CATALOGS/gll_psc_v19_4FGL.fit'
 SRC_MASK_RAD = 1 #[deg]                                                                                                                                               
