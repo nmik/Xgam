@@ -80,7 +80,7 @@ def mkMask(**kwargs):
         gp_mask_lat = data.GP_MASK_LAT
         bad_pix += mask_gp(gp_mask_lat, nside)
     for bpix in np.unique(bad_pix):
-        mask[bpix] = 0
+        mask[bpix] = hp.UNSEEN
     if not os.path.exists(os.path.join(X_CONFIG, 'fits')):
     	os.system('mkdir %s' %os.path.join(X_CONFIG, 'fits'))
     out_name = os.path.join(X_CONFIG, 'fits/'+out_label+'.fits')
