@@ -583,6 +583,21 @@ class xInterpolatedBivariateSpline(xBivariateSplineBase, RectBivariateSpline):
         fmt = dict(yname='Horizontal projection', xname=self.yname,
                    xunits=self.yunits)
         return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
+        
+    def vprojection(self):
+        """Return the vertical projection of the bivariate spline.
+        """
+        _y = self.x
+        _yo = self.y
+        _xo = self.x
+        _x = []
+        for x in _xo:
+            _yy = self.vslice(x) 
+            _x.append(numpy.sum(_yy.y))
+        _x = numpy.array(_x)
+        fmt = dict(xname='Vertical projection', yname=self.xname, yunits=self.xunits)
+        print(len(self.x), 'aaaaa')
+        return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
 
     def build_vppf(self):
         """Create the vertical percent point function (or inverse of cdf).
