@@ -50,6 +50,12 @@ PARSER.add_argument('--gpmask', type=str, choices=['no','shape', 'flat'],
 PARSER.add_argument('--srcweightedmask', type=ast.literal_eval,
                     choices=[True, False], default=False,
                     help='weighted sources mask activated')
+PARSER.add_argument('--northmask', type=ast.literal_eval,
+                    choices=[True, False], default=False,
+                    help='Northen hemisphere mask activated')
+PARSER.add_argument('--southmask', type=ast.literal_eval,
+                    choices=[True, False], default=False,
+                    help='Southern hemisphere mask activated')
 PARSER.add_argument('--show', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='if True the mask map is displayed')
@@ -93,13 +99,21 @@ def mkMask(**kwargs):
     	energy = data.ENERGY
     	psf_spline = get_psf_en_univariatespline(psf_f)
     	bad_pix += mask_src_fluxPSFweighted_1(cat_file, ext_cat_file, psf_spline, energy, nside)
+    if kwargs['northmask'] == True:
+        from Xgam.utils.mkmask_ import mask_north
+        north_lat = data.NORTH_LAT
+        bad_pix += mask_north(north_lat, nside)
+    if kwargs['southmask'] == True:
+        from Xgam.utils.mkmask_ import mask_south
+        south_lat = data.SOUTH_LAT
+        bad_pix += mask_north(south_lat, nside)
     for bpix in np.unique(bad_pix):
         mask[bpix] = hp.UNSEEN
     if not os.path.exists(os.path.join(X_CONFIG, 'fits')):
     	os.system('mkdir %s' %os.path.join(X_CONFIG, 'fits'))
     out_name = os.path.join(X_CONFIG, 'fits/'+out_label+'.fits')
     fsky = 1-(len(np.unique(bad_pix))/float(npix))
-    logger.info('f$_{sky}$ = %.3f'%fsky)
+    logger.info('fsky = %.3f'%fsky)
     hp.write_map(out_name, mask, coord='G')
     logger.info('Created %s' %out_name)
     
