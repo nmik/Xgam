@@ -20,11 +20,16 @@
 """
 
 import os
+from Xgam import X_CONFIG
 
-OUT_LABEL = 'Mask_gp25_src4FGL1'                                                                                                                      
+OUT_LABEL = 'Mask_weighted1_1000.fits'                                                                                                                      
 
 NSIDE = 128                                                                                                                                                      
-SRC_CATALOG =  '/Users/mnegro/Documents/_FERMI/CATALOGS/gll_psc_v19_4FGL.fit'
+SRC_CATALOG = '/Users/mnegro/Documents/_FERMI/CATALOGS/gll_psc_v19_4FGL.fit'
 EXTSRC_CATALOG = '/Users/mnegro/Documents/_FERMI/CATALOGS/gll_psc_v19_4FGL.fit'
 SRC_MASK_RAD = 1 #[deg]                                                                                                                                               
-GP_MASK_LAT = 25.
+GP_MASK_LAT = 25. #[deg]
+
+# Only for weighted mask usinf function "mask_src_fluxPSFweighted_1"
+PSF_FILE = os.path.join(X_CONFIG, 'fits/psf_SV_t32.fits')
+ENERGY = 1000 #[MeV]
