@@ -15,12 +15,14 @@
 """
 
 import os
+#import imp
 import ast
 import argparse
 import numpy as np
 import healpy as hp
 from astropy.io import fits as pf
 from importlib.machinery import SourceFileLoader
+
 
 from Xgam import X_CONFIG
 from Xgam.utils.logging_ import logger, startmsg
@@ -45,6 +47,9 @@ PARSER.add_argument('--extsrcmask', type=ast.literal_eval,
 PARSER.add_argument('--gpmask', type=str, choices=['no','shape', 'flat'],
                     default='no',
                     help='galactic plain mask (only "flat" available now)')
+PARSER.add_argument('--srcweightedmask', type=ast.literal_eval,
+                    choices=[True, False], default=False,
+                    help='weighted sources mask activated')
 PARSER.add_argument('--show', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='if True the mask map is displayed')
@@ -73,12 +78,21 @@ def mkMask(**kwargs):
     if kwargs['extsrcmask'] == True:
         from Xgam.utils.mkmask_ import mask_extsrc
         src_mask_rad = data.SRC_MASK_RAD
-        cat_file = data.SRC_CATALOG
+        cat_file = data.EXTSRC_CATALOG
         bad_pix += mask_extsrc(cat_file, src_mask_rad, nside)
     if kwargs['gpmask'] == 'flat':
         from Xgam.utils.mkmask_ import mask_gp
         gp_mask_lat = data.GP_MASK_LAT
         bad_pix += mask_gp(gp_mask_lat, nside)
+    if kwargs['srcweightedmask'] == True:
+    	from Xgam.utils.mkmask_ import mask_src_fluxPSFweighted_1
+    	from Xgam.utils.parsing_ import get_psf_en_univariatespline
+    	cat_file = data.SRC_CATALOG
+    	ext_cat_file = data.EXTSRC_CATALOG
+    	psf_f = data.PSF_FILE
+    	energy = data.ENERGY
+    	psf_spline = get_psf_en_univariatespline(psf_f)
+    	bad_pix += mask_src_fluxPSFweighted_1(cat_file, ext_cat_file, psf_spline, energy, nside)
     for bpix in np.unique(bad_pix):
         mask[bpix] = hp.UNSEEN
     if not os.path.exists(os.path.join(X_CONFIG, 'fits')):
