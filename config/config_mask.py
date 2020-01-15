@@ -22,8 +22,7 @@
 import os
 from Xgam import X_CONFIG
 
-OUT_LABEL = 'Mask_weighted1_1000.fits'    
-OUT_LABEL = 'Mask_IC_SouthernHemisphere.fits'                                                                                                                   
+OUT_LABEL = 'Mask_weighted1_1000.fits'                                                                                                                     
 
 NSIDE = 128                                                                                                                                                      
 SRC_CATALOG = '/Users/mnegro/Documents/_FERMI/CATALOGS/gll_psc_v19_4FGL.fit'
