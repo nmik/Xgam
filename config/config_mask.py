@@ -22,7 +22,8 @@
 import os
 from Xgam import X_CONFIG
 
-OUT_LABEL = 'Mask_weighted1_1000.fits'                                                                                                                      
+OUT_LABEL = 'Mask_weighted1_1000.fits'    
+OUT_LABEL = 'Mask_IC_SouthernHemisphere.fits'                                                                                                                   
 
 NSIDE = 128                                                                                                                                                      
 SRC_CATALOG = '/Users/mnegro/Documents/_FERMI/CATALOGS/gll_psc_v19_4FGL.fit'
@@ -33,3 +34,7 @@ GP_MASK_LAT = 25. #[deg]
 # Only for weighted mask usinf function "mask_src_fluxPSFweighted_1"
 PSF_FILE = os.path.join(X_CONFIG, 'fits/psf_SV_t32.fits')
 ENERGY = 1000 #[MeV]
+
+# Only for Northen/Southern hemisphere masks
+NORTH_LAT = 80 # mask from this value up
+SOUTH_LAT = -2 # mask from this value down
