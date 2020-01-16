@@ -1,17 +1,17 @@
 
-#!/usr/bin/env python                                                          #                                                                                      
-#                                                                              #                                                                                      
-# Autor: Michela Negro, University of Torino.                                  #                                                                                      
-# On behalf of the Fermi-LAT Collaboration.                                    #                                                                                      
-#                                                                              #                                                                                      
-# This program is free software; you can redistribute it and/or modify         #                                                                                      
-# it under the terms of the GNU GengReral Public License as published by       #                                                                                      
-# the Free Software Foundation; either version 3 of the License, or            #                                                                                      
-# (at your option) any later version.                                          #                                                                                      
-#                                                                              #                                                                                      
-#------------------------------------------------------------------------------#                                                                                      
+#!/usr/bin/env python                                                          #
+#                                                                              #
+# Autor: Michela Negro, University of Torino.                                  #
+# On behalf of the Fermi-LAT Collaboration.                                    #
+#                                                                              #
+# This program is free software; you can redistribute it and/or modify         #
+# it under the terms of the GNU GengReral Public License as published by       #
+# the Free Software Foundation; either version 3 of the License, or            #
+# (at your option) any later version.                                          #
+#                                                                              #
+#------------------------------------------------------------------------------#
 
-"""Produces sky masks (work in progress)                                                                                                                                                  
+"""Produces sky masks (work in progress)
 """
 
 import os
@@ -30,7 +30,7 @@ from Xgam.utils.logging_ import logger, startmsg
 __description__ = 'Produce masks fits files'
 
 
-"""Command-line switches.                                                                                                                                             
+"""Command-line switches.
 """
 
 formatter = argparse.ArgumentDefaultsHelpFormatter
@@ -50,6 +50,9 @@ PARSER.add_argument('--gpmask', type=str, choices=['no','shape', 'flat'],
 PARSER.add_argument('--srcweightedmask', type=ast.literal_eval,
                     choices=[True, False], default=False,
                     help='weighted sources mask activated')
+PARSER.add_argument('--srcweightedmask2', type=ast.literal_eval,
+                    choices=[True, False], default=False,
+                    help='weighted sources mask activated (second version)')
 PARSER.add_argument('--northmask', type=ast.literal_eval,
                     choices=[True, False], default=False,
                     help='Northen hemisphere mask activated')
@@ -67,7 +70,7 @@ def get_var_from_file(filename):
     f.close()
 
 def mkMask(**kwargs):
-    """Routine to produce sky maps (limited edition)                                                                                                                                                               
+    """Routine to produce sky maps (limited edition)
     """
     logger.info('Starting mask production...')
     get_var_from_file(kwargs['config'])
@@ -99,6 +102,16 @@ def mkMask(**kwargs):
     	energy = data.ENERGY
     	psf_spline = get_psf_en_univariatespline(psf_f)
     	bad_pix += mask_src_fluxPSFweighted_1(cat_file, ext_cat_file, psf_spline, energy, nside)
+    if kwargs['srcweightedmask2'] == True:
+    	from Xgam.utils.mkmask_ import mask_src_fluxPSFweighted_2
+    	from Xgam.utils.parsing_ import get_psf_en_univariatespline
+    	cat_file = data.SRC_CATALOG
+    	ext_cat_file = data.EXTSRC_CATALOG
+    	psf_f = data.PSF_FILE
+    	e_min = data.E_MIN
+        e_max = data.E_MAX
+    	psf_spline = get_psf_en_univariatespline(psf_f)
+    	bad_pix += mask_src_fluxPSFweighted_2(cat_file, ext_cat_file, psf_spline, e_min, e_max, nside)
     if kwargs['northmask'] == True:
         from Xgam.utils.mkmask_ import mask_north
         north_lat = data.NORTH_LAT
@@ -116,7 +129,7 @@ def mkMask(**kwargs):
     logger.info('fsky = %.3f'%fsky)
     hp.write_map(out_name, mask, coord='G')
     logger.info('Created %s' %out_name)
-    
+
     if kwargs['show'] == True:
     	import matplotlib.pyplot as plt
     	hp.mollview(mask, cmap='bone')

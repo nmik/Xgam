@@ -22,8 +22,9 @@ RUN conda install -y --name fermi healpy
 
 #Clone Xgam
 WORKDIR /run_xgam
+#RUN ls -lh
 RUN git clone https://github.com/nmik/Xgam.git
-COPY config/config_dataselection.py /run_xgam/Xgam/config/config_dataselection.py
+#COPY config/config_dataselection.py /run_xgam/Xgam/config/config_dataselection.py
 #RUN less /run_xgam/Xgam/config/config_dataselection.py
 
 #Creating bashrc file

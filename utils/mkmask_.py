@@ -14,21 +14,22 @@
 import os
 import numpy as np
 import healpy as hp
+from scipy.integrate import quad
 from astropy.io import fits as pf
 from Xgam.utils.logging_ import logger
 import matplotlib.pyplot as plt
 from Xgam.utils.matplotlib_ import *
 
 def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
-    """Returns the 'bad pixels' defined by the position of a source and a                                                                                             
-       certain radius away from that point.                                                                                                                           
-                                                                                                                                                                      
-       cat_file: str                                                                                                                                                  
-           .fits file of the sorce catalog                                                                                                                            
-       MASK_S_RAD: float                                                                                                                                              
-           radius around each source definig bad pixels to mask                                                                                                       
-       NSIDE: int                                                                                                                                                     
-           healpix nside parameter                                                                                                                                    
+    """Returns the 'bad pixels' defined by the position of a source and a
+       certain radius away from that point.
+
+       cat_file: str
+           .fits file of the sorce catalog
+       MASK_S_RAD: float
+           radius around each source definig bad pixels to mask
+       NSIDE: int
+           healpix nside parameter
     """
     logger.info('Mask for sources activated')
     src_cat = pf.open(CAT_FILE)
@@ -53,15 +54,15 @@ def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
     return BAD_PIX_SRC
 
 def mask_extsrc(CAT_FILE, MASK_S_RAD, NSIDE):
-    """Returns the 'bad pixels' defined by the position of a source and a                                                                                             
-       certain radius away from that point.                                                                                                                           
-                                                                                                                                                                      
-       cat_file: str                                                                                                                                                  
-           .fits file of the sorce catalog                                                                                                                            
-       MASK_S_RAD: float                                                                                                                                              
-           radius around each source definig bad pixels to mask                                                                                                       
-       NSIDE: int                                                                                                                                                     
-           healpix nside parameter                                                                                                                                    
+    """Returns the 'bad pixels' defined by the position of a source and a
+       certain radius away from that point.
+
+       cat_file: str
+           .fits file of the sorce catalog
+       MASK_S_RAD: float
+           radius around each source definig bad pixels to mask
+       NSIDE: int
+           healpix nside parameter
     """
     logger.info('Mask for extended sources activated')
     src_cat = pf.open(CAT_FILE)
@@ -89,14 +90,14 @@ def mask_extsrc(CAT_FILE, MASK_S_RAD, NSIDE):
         	radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(5))
         	BAD_PIX_SRC.extend(radintpix)
     return BAD_PIX_SRC
-    
+
 def mask_gp(MASK_GP_LAT, NSIDE):
-    """Returns the 'bad pixels' around the galactic plain .                                                                                                           
-                                                                                                                                                                      
-       MASK_GP_LAT: float                                                                                                                                             
-           absolute value of galactic latitude definig bad pixels to mask                                                                                             
-       NSIDE: int                                                                                                                                                     
-           healpix nside parameter                                                                                                                                    
+    """Returns the 'bad pixels' around the galactic plain .
+
+       MASK_GP_LAT: float
+           absolute value of galactic latitude definig bad pixels to mask
+       NSIDE: int
+           healpix nside parameter
     """
     logger.info('Mask for the galactic plane activated')
     NPIX = hp.pixelfunc.nside2npix(NSIDE)
@@ -108,23 +109,23 @@ def mask_gp(MASK_GP_LAT, NSIDE):
         if abs(b) <= MASK_GP_LAT:
             BAD_PIX_GP.append(iii[i])
     return BAD_PIX_GP
-    
+
 def mask_src_fluxPSFweighted_1(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, ENERGY, NSIDE, APODIZE=False):
-    """Returns the 'bad pixels' defined by the position of a source and a                                                                                              
-       certain radius away from that point. The radii increase with the                                                                                                
-       brightness and rescaled by a factor between 1 and 0.3 shaped as the PSF.                                                                                        
-                                                                                                                                                                       
-       cat_src_file: str                                                                                                                                               
-          .fits file with the source catalog                                                                                                                           
-       cat_extsrc_file: str                                                                                                                                            
-          .fits file with the extended sources catalog                                                                                                                 
-       ENERGY: float                                                                                                                                                   
-          Mean energy of the map to be masked                                                                                                                          
-       NSIDE: int                                                                                                                                                      
-          healpix nside parameter   
+    """Returns the 'bad pixels' defined by the position of a source and a
+       certain radius away from that point. The radii increase with the
+       brightness and rescaled by a factor between 1 and 0.3 shaped as the PSF.
+
+       cat_src_file: str
+          .fits file with the source catalog
+       cat_extsrc_file: str
+          .fits file with the extended sources catalog
+       ENERGY: float
+          Mean energy of the map to be masked
+       NSIDE: int
+          healpix nside parameter
        APODIZE: bool
-       	  if True the apodization of the mask is applied. The fraction of radius to add 
-       	  to the masked radius for the apodization is k=2.3.                                                                                                                           
+       	  if True the apodization of the mask is applied. The fraction of radius to add
+       	  to the masked radius for the apodization is k=2.3.
     """
     src_cat = pf.open(CAT_FILE)
     extsrc_cat = pf.open(CAT_EXT_FILE)
@@ -178,7 +179,7 @@ def mask_src_fluxPSFweighted_1(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, ENERGY, NSIDE
         BAD_PIX_SRC.extend(radintpix)
     if APODIZE == True:
     	_apd_ring_pix, _apd_ring_val = [], []
-    	k = 2.3 # fraction of radius to apodize and add to the radius                                                                                                  
+    	k = 2.3 # fraction of radius to apodize and add to the radius
     	for i, src in enumerate(SOURCES):
     		apd_rad = k*RADrad[i]
     		GLON = SOURCES.field('GLON')[i]
@@ -196,6 +197,121 @@ def mask_src_fluxPSFweighted_1(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, ENERGY, NSIDE
     	return BAD_PIX_SRC, _apd_ring_pix, _apd_ring_val
     else:
         return BAD_PIX_SRC
+
+def compute_flux(E_MIN, E_MAX, SOURCE):
+    SPEC_TYPE = SOURCE['SpectrumType']
+    E0 = SOURCE['Pivot_Energy']
+    if SPEC_TYPE == 'PowerLaw':
+        K =  SOURCE['PL_Flux_Density']
+        GAMMA = SOURCE['PL_Index']
+        dNdE = lambda E: K*(E/E0)**(-GAMMA)
+
+    elif SPEC_TYPE == 'LogParabola':
+        K =  SOURCE['LP_Flux_Density']
+        alpha = SOURCE['LP_Index']
+        beta = SOURCE['LP_beta']
+        dNdE = lambda E: K*(E/E0)**(-alpha-beta*np.log(E/E0))
+
+    elif SPEC_TYPE == 'PLSuperExpCutoff':
+        K =  SOURCE['PLEC_Flux_Density']
+        GAMMA = SOURCE['PLEC_Index']
+        a = SOURCE['PLEC_ Expfactor']
+        b = SOURCE['PLEC_ Exp_Index']
+        dNdE = lambda E: K*(E/E0)**(-GAMMA)*np.exp(a*(E0**b - E**b))
+
+    return quad(dNdE,E_MIN,E_MAX)[0]
+
+def mask_src_fluxPSFweighted_2(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, E_MIN, E_MAX, NSIDE, APODIZE=False):
+    """Returns the 'bad pixels' defined by the position of a source and a
+       certain radius away from that point. The radii increase with the
+       brightness and rescaled by a factor between 1 and 0.3 shaped as the PSF.
+
+       cat_src_file: str
+            .fits file with the source catalog
+       cat_extsrc_file: str
+            .fits file with the extended sources catalog
+       E_MIN: float
+            Lower energy of the map to be masked
+       E_MIN: float
+            Upper energy of the map to be masked
+       NSIDE: int
+            healpix nside parameter
+       APODIZE: bool
+       	    if True the apodization of the mask is applied. The fraction of radius to add
+       	    to the masked radius for the apodization is k=2.3.
+    """
+    src_cat = pf.open(CAT_FILE)
+    extsrc_cat = pf.open(CAT_EXT_FILE)
+    NPIX = hp.pixelfunc.nside2npix(NSIDE)
+    CAT = src_cat['LAT_Point_Source_Catalog']
+    CAT_EXTENDED = extsrc_cat['ExtendedSources']
+    BAD_PIX_SRC = []
+    SOURCES = CAT.data
+    EXT_SOURCES = CAT_EXTENDED.data
+    FLUX = []
+    for SRC in SOURCES:
+        FLUX.append(compute_flux(E_MIN, E_MAX, SRC))
+    src_cat.close()
+    extsrc_cat.close()
+    ENERGY = np.sqrt(E_MIN*E_MAX)
+    psf_en = PSF_SPLINE(ENERGY)
+    flux_min, flux_max = min(FLUX), max(FLUX)
+    FLUX_RATIO = np.array(FLUX)/flux_min
+    RADdeg = psf_en*np.sqrt(2*np.log10(5*FLUX_RATIO))
+    RADrad = np.radians(RADdeg)
+    logger.info('Masking the extended Sources')
+    logger.info('-> 10xPSF(%.2f GeV) around CenA and LMC'%(ENERGY/1000))
+    logger.info('-> 5xPSF(%.2f GeV) around the remaining'%(ENERGY/1000))
+    for i, src in enumerate(EXT_SOURCES):
+        NAME = EXT_SOURCES[i][0]
+        GLON = EXT_SOURCES.field('GLON')[i]
+        GLAT = EXT_SOURCES.field('GLAT')[i]
+        if 'LMC' in NAME or 'CenA Lobes' in NAME:
+        	logger.info('Masking %s with 10 deg radius disk...'%NAME)
+        	rad = 10
+        	x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
+        	b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+        	BAD_PIX_SRC.append(b_pix)
+        	radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(10))
+        	BAD_PIX_SRC.extend(radintpix)
+        else:
+        	logger.info('Masking %s with 5 deg radius disk...'%NAME)
+        	rad = 5
+        	x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
+        	b_pix = hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+        	BAD_PIX_SRC.append(b_pix)
+        	radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(5))
+        	BAD_PIX_SRC.extend(radintpix)
+    logger.info('Flux-weighted mask for sources activated')
+    for i, src in enumerate(SOURCES):
+        GLON = SOURCES.field('GLON')[i]
+        GLAT = SOURCES.field('GLAT')[i]
+        x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
+        b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+        BAD_PIX_SRC.append(b_pix)
+        radintpix = hp.query_disc(NSIDE, (x, y, z), RADrad[i])
+        BAD_PIX_SRC.extend(radintpix)
+    if APODIZE == True:
+    	_apd_ring_pix, _apd_ring_val = [], []
+    	k = 2.3 # fraction of radius to apodize and add to the radius
+    	for i, src in enumerate(SOURCES):
+    		apd_rad = k*RADrad[i]
+    		GLON = SOURCES.field('GLON')[i]
+    		GLAT = SOURCES.field('GLAT')[i]
+    		x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
+    		b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+    		mask_disk = hp.query_disc(NSIDE, (x, y, z), RADrad[i])
+    		apod_disk = hp.query_disc(NSIDE, (x, y, z), apd_rad)
+    		apod_ring_pix = np.setxor1d(apod_disk, mask_disk)
+    		apod_ring_vec = hp.pixelfunc.pix2vec(NSIDE, apod_ring_pix)
+    		apod_ring_dist = hp.rotator.angdist((x,y,z), apod_ring_vec)
+    		_apd_ring_pix.append(apod_ring_pix)
+    		ang_x =  (np.pi/2. * (apod_ring_dist-RADrad[i]))/apd_rad
+    		_apd_ring_val.append(np.cos(np.pi/2.-ang_x))
+    	return BAD_PIX_SRC, _apd_ring_pix, _apd_ring_val
+    else:
+        return BAD_PIX_SRC
+<<<<<<< Updated upstream
         
 
 def mask_south(LAT_LINE, NSIDE):
@@ -235,3 +351,5 @@ def mask_north(LAT_LINE, NSIDE):
         if b >= LAT_LINE:
             BAD_PIX.append(iii[i])
     return BAD_PIX
+=======
+>>>>>>> Stashed changes
