@@ -50,7 +50,8 @@ PARSER.add_argument('--minval', type=float, default=None, help='Minimum range va
 PARSER.add_argument('--maxval', type=float, default=None, help='Maximum range value')
 PARSER.add_argument('--counts', type=ast.literal_eval, choices=[True, False],
                     default=False, help='set to True if the map is a count map')
-PARSER.add_argument('--applymask', type=str, default=None, help='healpy mask map to apply')
+PARSER.add_argument('-s', '--save', type=ast.literal_eval, choices=[True, False],
+                    default=False, help='set to True to save the plot map')
 
 
 def maps_view(**kwargs):
@@ -77,8 +78,13 @@ def maps_view(**kwargs):
         healpix_map = hp.pixelfunc.ud_grade(healpix_maps, nside_out, pess=True)
     else:
     	healpix_map = hp.pixelfunc.ud_grade(healpix_maps, nside_out, pess=True, power=-2)
-    hp.mollview(healpix_map, title=TITLE, norm=NORM, coord=['G', COORD], min=MINVAL, max=MAXVAL,  
-    			cmap=CMAP, unit=UNIT)
+    hp.mollview(healpix_map, title=TITLE, norm=NORM, coord=['G', COORD], 
+    					  min=MINVAL, max=MAXVAL, cmap=CMAP, unit=UNIT)
+    if kwargs['save'] == True:
+    	if not os.path.exists(os.path.join(X_OUT, 'figs')):
+    		os.system('mkdir %s' %os.path.join(X_OUT, 'figs'))
+    	out_name = os.path.join(X_OUT, 'figs', TITLE.replace(' ', '_'))
+    	plt.savefig(out_name)
     plt.show()
 	
 	
