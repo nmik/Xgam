@@ -39,8 +39,8 @@ PARSER.add_argument('--udgrade', type=int, default=512,
                     help='apply a up or under grade of the nside')
 PARSER.add_argument('--norm', type=str, choices=['lin', 'log','hist','optimized'],
                     default='lin', help='specify the scale of the z axis')
-PARSER.add_argument('--coord', type=str, choices=['G','E','C'],
-                    default='G', help='specify the coordinate system')
+PARSER.add_argument('--coord', type=str, choices=['G','E','C'], default='G', 
+					help='Converts the coord. from "G" to the specified ones.')
 PARSER.add_argument('--cmap', type=str, default='viridis', help='color scale')
 PARSER.add_argument('--title', type=str, default='Map', help='map title')
 PARSER.add_argument('--unit', type=str, default='', help='units to display on the bar')
