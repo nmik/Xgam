@@ -217,8 +217,8 @@ def compute_flux(E_MIN, E_MAX, SOURCE):
     elif SPEC_TYPE == 'PLSuperExpCutoff':
         K =  SOURCE['PLEC_Flux_Density']
         GAMMA = SOURCE['PLEC_Index']
-        a = SOURCE['PLEC_ Expfactor']
-        b = SOURCE['PLEC_ Exp_Index']
+        a = SOURCE['PLEC_Expfactor']
+        b = SOURCE['PLEC_Exp_Index']
         dNdE = lambda E: K*(E/E0)**(-GAMMA)*np.exp(a*(E0**b - E**b))
 
     return quad(dNdE,E_MIN,E_MAX)[0]
