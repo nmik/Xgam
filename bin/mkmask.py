@@ -21,7 +21,8 @@ import argparse
 import numpy as np
 import healpy as hp
 from astropy.io import fits as pf
-from importlib.machinery import SourceFileLoader
+import imp
+#from importlib.machinery import SourceFileLoader
 
 
 from Xgam import X_CONFIG
@@ -66,7 +67,7 @@ PARSER.add_argument('--show', type=ast.literal_eval, choices=[True, False],
 def get_var_from_file(filename):
     f = open(filename)
     global data
-    data = SourceFileLoader('data', filename).load_module()
+    data = imp.load_source('data', '', f)
     f.close()
 
 def mkMask(**kwargs):
