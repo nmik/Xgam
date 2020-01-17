@@ -148,8 +148,8 @@ def mask_src_fluxPSFweighted_1(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, ENERGY, NSIDE
         flux_min*((rad_max - rad_min)/(flux_max - flux_min))
     RADrad = np.radians(RADdeg)
     logger.info('Masking the extended Sources')
-    logger.info('-> 10 deg around CenA and LMC'%(ENERGY/1000))
-    logger.info('-> 5 deg around the remaining'%(ENERGY/1000))
+    logger.info('-> 10 deg around CenA and LMC')
+    logger.info('-> 5 deg around the remaining')
     for i, src in enumerate(EXT_SOURCES):
         NAME = EXT_SOURCES[i][0]
         GLON = EXT_SOURCES.field('GLON')[i]
@@ -262,8 +262,8 @@ def mask_src_fluxPSFweighted_2(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, E_MIN, E_MAX,
     RADdeg = psf_en*np.sqrt(2*np.log10(5*FLUX_RATIO))
     RADrad = np.radians(RADdeg)
     logger.info('Masking the extended Sources')
-    logger.info('-> 10 deg around CenA and LMC'%(ENERGY/1000))
-    logger.info('-> 5 deg around the remaining'%(ENERGY/1000))
+    logger.info('-> 10 deg around CenA and LMC')
+    logger.info('-> 5 deg around the remaining')
     for i, src in enumerate(EXT_SOURCES):
         NAME = EXT_SOURCES[i][0]
         GLON = EXT_SOURCES.field('GLON')[i]
