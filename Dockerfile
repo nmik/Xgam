@@ -19,10 +19,12 @@ RUN conda update -n base -c defaults conda
 RUN conda config --add channels conda-forge
 RUN conda create -n fermi -c conda-forge/label/cf201901 -c fermi fermitools
 RUN conda install -y --name fermi healpy
+#RUN conda install -y --name fermi mesa
+#RUN apt-get update & apt-get install -y --fix-missing libgl1-mesa-glx
 
 #Clone Xgam
 WORKDIR /run_xgam
-#RUN ls -lh
+RUN ls -lh
 RUN git clone https://github.com/nmik/Xgam.git
 #COPY config/config_dataselection.py /run_xgam/Xgam/config/config_dataselection.py
 #RUN less /run_xgam/Xgam/config/config_dataselection.py
