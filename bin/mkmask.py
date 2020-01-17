@@ -15,13 +15,13 @@
 """
 
 import os
-#import imp
 import ast
+import sys
 import argparse
 import numpy as np
 import healpy as hp
 from astropy.io import fits as pf
-import imp
+
 
 
 from Xgam import X_OUT
@@ -63,11 +63,20 @@ PARSER.add_argument('--show', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='if True the mask map is displayed')
 
-def get_var_from_file(filename):
-    f = open(filename)
-    global data
-    data = imp.load_source('data', '', f)
-    f.close()
+if (sys.version_info > (3, 0)):
+	from importlib.machinery import SourceFileLoader
+	def get_var_from_file(filename):
+		f = open(filename)
+		global data
+		data = SourceFileLoader('data', filename).load_module()
+		f.close()
+else:
+	import imp
+	def get_var_from_file(filename):
+		f = open(filename)
+		global data
+		data = imp.load_source('data', '', f)
+		f.close()
 
 def mkMask(**kwargs):
     """Routine to produce sky maps (limited edition)
@@ -109,7 +118,7 @@ def mkMask(**kwargs):
     	ext_cat_file = data.EXTSRC_CATALOG
     	psf_f = data.PSF_FILE
     	e_min = data.E_MIN
-        e_max = data.E_MAX
+    	e_max = data.E_MAX
     	psf_spline = get_psf_en_univariatespline(psf_f)
     	bad_pix += mask_src_fluxPSFweighted_2(cat_file, ext_cat_file, psf_spline, e_min, e_max, nside)
     if kwargs['northmask'] == True:
@@ -121,7 +130,7 @@ def mkMask(**kwargs):
         south_lat = data.SOUTH_LAT
         bad_pix += mask_north(south_lat, nside)
     for bpix in np.unique(bad_pix):
-        mask[bpix] = hp.UNSEEN
+        mask[bpix] = 0
     if not os.path.exists(os.path.join(X_OUT, 'fits')):
     	os.system('mkdir %s' %os.path.join(X_OUT, 'fits'))
     out_name = os.path.join(X_OUT, 'fits/'+out_label+'.fits')
