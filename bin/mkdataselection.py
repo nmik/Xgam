@@ -26,7 +26,6 @@
 """
 
 import os
-import imp
 import ast
 import argparse
 import numpy as np
@@ -52,11 +51,20 @@ PARSER.add_argument('--gtltcube', type=ast.literal_eval, choices=[True, False],
                     default=True,
                     help='False if gtltcube command must not be run')
 
-def get_var_from_file(filename):
-    f = open(filename)
-    global data
-    data = imp.load_source('data', '', f)
-    f.close()
+if (sys.version_info > (3, 0)):
+	from importlib.machinery import SourceFileLoader
+	def get_var_from_file(filename):
+		f = open(filename)
+		global data
+		data = SourceFileLoader('data', filename).load_module()
+		f.close()
+else:
+	import imp
+	def get_var_from_file(filename):
+		f = open(filename)
+		global data
+		data = imp.load_source('data', '', f)
+		f.close()
     
 def mkSTanalysis(**kwargs):
     """Science Tools analysis chain
