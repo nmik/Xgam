@@ -17,6 +17,8 @@ import healpy as hp
 from scipy.integrate import quad
 from astropy.io import fits as pf
 from Xgam.utils.logging_ import logger
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from Xgam.utils.matplotlib_ import *
 
