@@ -24,7 +24,7 @@ from astropy.io import fits as pf
 import imp
 
 
-from Xgam import X_CONFIG
+from Xgam import X_OUT
 from Xgam.utils.logging_ import logger, startmsg
 
 __description__ = 'Produce masks fits files'
