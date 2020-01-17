@@ -311,16 +311,14 @@ def mask_src_fluxPSFweighted_2(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, E_MIN, E_MAX,
     	return BAD_PIX_SRC, _apd_ring_pix, _apd_ring_val
     else:
         return BAD_PIX_SRC
-<<<<<<< Updated upstream
-        
 
 def mask_south(LAT_LINE, NSIDE):
-    """Returns the 'bad pixels' around the galactic plain .                                                                                                           
-                                                                                                                                                                      
-       LAT_LINE: float                                                                                                                                             
-           value of celestial declination below which to mask                                                                                             
-       NSIDE: int                                                                                                                                                     
-           healpix nside parameter                                                                                                                                    
+    """Returns the 'bad pixels' around the galactic plain .
+
+       LAT_LINE: float
+           value of celestial declination below which to mask
+       NSIDE: int
+           healpix nside parameter
     """
     print('Mask for the southern hemishere activated')
     NPIX = hp.pixelfunc.nside2npix(NSIDE)
@@ -334,12 +332,12 @@ def mask_south(LAT_LINE, NSIDE):
     return BAD_PIX
 
 def mask_north(LAT_LINE, NSIDE):
-    """Returns the 'bad pixels' around the galactic plain .                                                                                                           
-                                                                                                                                                                      
-       LAT_LINE: float                                                                                                                                             
-           value of celestial declination below which to mask                                                                                             
-       NSIDE: int                                                                                                                                                     
-           healpix nside parameter                                                                                                                                    
+    """Returns the 'bad pixels' around the galactic plain .
+
+       LAT_LINE: float
+           value of celestial declination below which to mask
+       NSIDE: int
+           healpix nside parameter
     """
     print('Mask for the northen hemishere activated')
     NPIX = hp.pixelfunc.nside2npix(NSIDE)
@@ -351,5 +349,3 @@ def mask_north(LAT_LINE, NSIDE):
         if b >= LAT_LINE:
             BAD_PIX.append(iii[i])
     return BAD_PIX
-=======
->>>>>>> Stashed changes

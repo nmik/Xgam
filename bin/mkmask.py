@@ -22,7 +22,6 @@ import numpy as np
 import healpy as hp
 from astropy.io import fits as pf
 import imp
-#from importlib.machinery import SourceFileLoader
 
 
 from Xgam import X_CONFIG
