@@ -122,9 +122,9 @@ def mkMask(**kwargs):
         bad_pix += mask_north(south_lat, nside)
     for bpix in np.unique(bad_pix):
         mask[bpix] = hp.UNSEEN
-    if not os.path.exists(os.path.join(X_CONFIG, 'fits')):
-    	os.system('mkdir %s' %os.path.join(X_CONFIG, 'fits'))
-    out_name = os.path.join(X_CONFIG, 'fits/'+out_label+'.fits')
+    if not os.path.exists(os.path.join(X_OUT, 'fits')):
+    	os.system('mkdir %s' %os.path.join(X_OUT, 'fits'))
+    out_name = os.path.join(X_OUT, 'fits/'+out_label+'.fits')
     fsky = 1-(len(np.unique(bad_pix))/float(npix))
     logger.info('fsky = %.3f'%fsky)
     hp.write_map(out_name, mask, coord='G')
