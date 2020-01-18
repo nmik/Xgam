@@ -57,8 +57,8 @@ def foreground_map_convert(**kwargs):
     hp_frmap = np.arange(npix, dtype=np.float64)
     lon_fits = np.arange(len(maps_slices[0][0]))
     nresx = 360./len(lon_fits)
-    lon_fits_1 = (lon_fits[:1440]*nresx+180)
-    lon_fits = np.append(lon_fits_1, lon_fits[1440:]*nresx-180)
+    lon_fits_1 = np.flip(lon_fits[1440:]*nresx-180)
+    lon_fits = np.append(lon_fits_1, np.flip(lon_fits[:1440]*nresx+180))
     lat_fits = np.arange(len(maps_slices[0]))
     lat_fits = lat_fits*nresx-90
     fr_e = []
