@@ -128,7 +128,7 @@ def mkMask(**kwargs):
     if kwargs['southmask'] == True:
         from Xgam.utils.mkmask_ import mask_south
         south_lat = data.SOUTH_LAT
-        bad_pix += mask_north(south_lat, nside)
+        bad_pix += mask_south(south_lat, nside)
     for bpix in np.unique(bad_pix):
         mask[bpix] = 0
     if not os.path.exists(os.path.join(X_OUT, 'fits')):
