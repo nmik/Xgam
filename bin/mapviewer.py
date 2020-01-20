@@ -39,8 +39,9 @@ PARSER.add_argument('--udgrade', type=int, default=512,
                     help='apply a up or under grade of the nside')
 PARSER.add_argument('--norm', type=str, choices=['lin', 'log','hist','optimized'],
                     default='lin', help='specify the scale of the z axis')
-PARSER.add_argument('--coord', type=str, choices=['G','E','C'], default='G', 
-					help='Converts the coord. from "G" to the specified ones.')
+PARSER.add_argument('--coord', type=str, choices=['G','E','C'], default='G',  nargs='*',
+					help='Define the coord sys. If two agrs are provided then converts'+
+					'the coordinates from the firsts to the seconds.')
 PARSER.add_argument('--cmap', type=str, default='viridis', help='color scale')
 PARSER.add_argument('--title', type=str, default='Map', help='map title')
 PARSER.add_argument('--unit', type=str, default='', help='units to display on the bar')
@@ -63,6 +64,8 @@ def maps_view(**kwargs):
     MINVAL = kwargs['minval']
     CMAP = kwargs['cmap']
     COORD = kwargs['coord']
+    if len(COORD) > 1:
+    	COORD = [COORD[0], COORD[1]]
     UNIT = kwargs['unit']
     SMOOTH = kwargs['smoothing']
     input_file = kwargs['infile']
@@ -78,7 +81,7 @@ def maps_view(**kwargs):
         healpix_map = hp.pixelfunc.ud_grade(healpix_maps, nside_out, pess=True)
     else:
     	healpix_map = hp.pixelfunc.ud_grade(healpix_maps, nside_out, pess=True, power=-2)
-    hp.mollview(healpix_map, title=TITLE, norm=NORM, coord=['G', COORD], 
+    hp.mollview(healpix_map, title=TITLE, norm=NORM, coord=COORD, 
     					  min=MINVAL, max=MAXVAL, cmap=CMAP, unit=UNIT)
     if kwargs['save'] == True:
     	if not os.path.exists(os.path.join(X_OUT, 'figs')):
