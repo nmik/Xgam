@@ -13,7 +13,7 @@
 
 """ Example of configuration file for bin/mkmask.py.
 
-    To run the analysis just do: 
+    To run the analysis just do:
     >>> python bin/mkmask.py -c config/config_mask.py
     To see the option availabe for bin/mkdataselection.py type:
     >>> python bin/mkdataselection.py -h
@@ -29,7 +29,7 @@ from Xgam.utils.ScienceTools_ import gtEbindef
 OUT_LABEL = 'w9w50_SV_t32'
 
 #start and stop week number to be selected in FT1 and FT2 files
-START_WEEK = 9 
+START_WEEK = 9
 STOP_WEEK = 50
 
 # minumum and maximum energy and energy bin number to generate fits file
@@ -72,8 +72,8 @@ GTBIN_DICT = {'evfile': 'DEFAULT',
               'algorithm': 'CCUBE',
               'scfile': SC_FILE,
               'hpx_ordering_scheme': 'RING',
-              'hpx_order': HPX_MAP_ORDER, 
-              'coordsys': 'GAL',                                  
+              'hpx_order': HPX_MAP_ORDER,
+              'coordsys': 'GAL',
               'hpx_ebin': 'yes',
               'ebinalg': 'FILE',
               'ebinfile': EBINNING_FILE,
@@ -82,7 +82,7 @@ GTBIN_DICT = {'evfile': 'DEFAULT',
 
 GTLTCUBE_DICT = {'evfile': 'DEFAULT',
                  'scfile':  SC_FILE,
-                 'zmax': ZMAX,                     
+                 'zmax': ZMAX,
                  'dcostheta': 0.025,
                  'binsz': 1,
                  'outfile': 'DEFAULT',
@@ -95,4 +95,5 @@ GTEXPCUBE2_DICT = {'infile': 'DEFAULT',
                    'outfile': 'DEFAULT',
                    'ebinalg': 'FILE',
               	   'ebinfile': EBINNING_FILE,
+                   'bincalc' : 'CENTER',
                    'clobber': 'no'}

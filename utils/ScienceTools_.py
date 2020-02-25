@@ -87,7 +87,7 @@ def gtmktime(label, maketime_dict):
         return OUTFILE
 
 def gtbin(label, evtbin_dict):
-    """gtbin from Science Tools. 
+    """gtbin from Science Tools.
 
        label: str
           To automatically set the name of the output file
@@ -210,7 +210,7 @@ def gtEbindef(ebinning_array, file_name='ebinning.txt'):
         os.makedirs(X_OUT)
     txt_file_name = os.path.join(X_OUT, file_name)
     txt_file = open(txt_file_name, 'w')
-    fits_file_name = os.path.join(X_OUT, 
+    fits_file_name = os.path.join(X_OUT,
                                   file_name.replace('.txt', '.fits'))
     for emin, emax in zip(ebinning_array[:-1], ebinning_array[1:]):
         txt_file.write('%.4f %.4f\n'%(emin, emax))
@@ -324,7 +324,7 @@ def main():
                 'scfile': FT2_FILE,
                 'hpx_ordering_scheme': 'RING',
                 'hpx_order': 7,
-                'coordsys': 'GAL',                                  
+                'coordsys': 'GAL',
                 'hpx_ebin': 'yes',
                 'ebinalg': 'FILE',
                 'ebinfile': EBINNING_FILE,
