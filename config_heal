@@ -1,0 +1,13 @@
+3
+gcc
+
+gfortran
+
+
+
+gcc
+
+ar -rsv
+libcfitsio.a
+/cfitsio_latest/lib
+/cfitsio_latest/include
