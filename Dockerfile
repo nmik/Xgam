@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 MAINTAINER simone.ammazzalorso@unito.it
 
+RUN ls
 # Install needed python libraries
 RUN apt-get update && yes|apt-get upgrade
 RUN apt-get update && apt-get install -y curl git time wget build-essential unzip gfortran libcurl4 libcurl4-openssl-dev cmake
@@ -14,33 +15,17 @@ RUN ./configure --prefix=/cfitsio_latest
 RUN make && make install && make clean
 
 # Install HEALPIX
-RUN wget -O Healpix_latest.tar.gz "https://sourceforge.net/projects/healpix/files/latest/download"
-RUN mkdir /Healpix_latest && unzip -d /Healpix_latest Healpix_latest.tar.gz
+#RUN wget -O Healpix_latest.tar.gz "https://sourceforge.net/projects/healpix/files/latest/download"
+#RUN mkdir /Healpix_latest && unzip -d /Healpix_latest Healpix_latest.tar.gz
+RUN wget -O Healpix_latest.zip "https://sourceforge.net/projects/healpix/files/Healpix_3.60/Healpix_3.60_2019Dec18.zip/download"
+RUN mkdir /Healpix_latest && unzip -d /Healpix_latest Healpix_latest.zip
 WORKDIR /Healpix_latest
-RUN mv Healpix*/* /Healpix_latest/ && mkdir bin && mkdir build && mkdir include && mkdir lib
+RUN mv Healpix*/* /Healpix_latest/ && mkdir /Healpix_latest/bin && mkdir /Healpix_latest/build && mkdir /Healpix_latest/include && mkdir /Healpix_latest/lib
 SHELL ["/bin/bash", "-c"]
 
-#RUN echo "3" > /Healpix_latest/config_heal \
-#   && echo "gcc" >> /Healpix_latest/config_heal \
-#   && echo " " >> /Healpix_latest/config_heal \
-#   #&& echo "-O3 -ffast-math -march=native -fopenmp" >> /Healpix_latest/config_heal \
-#   && echo " " >> /Healpix_latest/config_heal \
-#   && echo " " >> /Healpix_latest/config_heal \
-##   && echo "-I$(F90_INCDIR) -DGFORTRAN -fno-second-underscore" >> /Healpix_latest/config_heal \
-##   && echo " " >> /Healpix_latest/config_heal \
-#   #&& echo "-O3" >> /Healpix_latest/config_heal \
-#   && echo " " >> /Healpix_latest/config_heal \
-#   && echo "gcc" >> /Healpix_latest/config_heal \
-#   #&& echo " " >> /Healpix_latest/config_heal \
-#   && echo " " >> /Healpix_latest/config_heal \
-#   #&& echo "-O3 -std=c99 -I$(HEALPIX)/include" >> /Healpix_latest/config_heal \
-#   && echo "ar -rsv" >> /Healpix_latest/config_heal \
-#   && echo "libcfitsio.a" >> /Healpix_latest/config_heal \
-#   && echo "/cfitsio_latest/lib" >> /Healpix_latest/config_heal \
-#   && echo "/cfitsio_latest/include" >> /Healpix_latest/config_heal
-COPY config_heal /Healpix_latest/config_heal
-RUN less config_heal
-RUN /bin/bash -c "./configure < config_heal"
+RUN wget -O configure "https://sourceforge.net/p/healpix/code/HEAD/tree/branches/branch_v360r1104/configure?format=raw"
+RUN wget -O hpxconfig_functions.sh "https://sourceforge.net/p/healpix/code/HEAD/tree/branches/branch_v360r1104/hpxconfig_functions.sh?format=raw"
+RUN F_PARAL=1 FITSDIR=/cfitsio_latest/lib/ FITSINC=/cfitsio_latest/include ./configure -L --auto=f90
 RUN make && make test && make clean
 
 # Install Polspice
@@ -50,7 +35,7 @@ RUN wget -O PolSpice.tar.gz ftp://ftp.iap.fr/pub/from_users/hivon/PolSpice/PolSp
 RUN tar --strip-components=1 -xvf PolSpice.tar.gz && mkdir build
 WORKDIR /Polspice/build
 RUN cmake .. -DCFITSIO=/cfitsio_latest/lib -DHEALPIX=/Healpix_latest
-RUN make
+RUN make && make clean
 RUN /Polspice/bin/spice -help
 
 WORKDIR /tmp
