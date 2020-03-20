@@ -67,9 +67,12 @@ RUN echo "echo 'Setting Xgam environment...'" > /run_xgam/.bashrc \
    && echo "export X_OUT=/archive/home/sammazza/fermi_data" >> /run_xgam/.bashrc \
    && echo "export X_OUT_FIG=/archive/home/sammazza/fermi_data" >> /run_xgam/.bashrc \
    && echo "source activate fermi" >> /run_xgam/.bashrc \
+   && echo "export HEALPIX=/Healpix_latest" >> /run_xgam/.bashrc \
    && echo "echo 'Done.'" >> /run_xgam/.bashrc \
 RUN echo "bashrc file:" && less /run_xgam/.bashrc
 
 WORKDIR /archive/home/sammazza/fermi_data
+RUN mkdir /home/simone/
 # Define entrypoint and default values for args
-CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /archive/home/sammazza/fermi_data/bash_script.sh"]
+#CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /archive/home/sammazza/fermi_data/bash_script.sh"]
+CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /home/simone/bash_script.sh"]
