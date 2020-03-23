@@ -61,12 +61,12 @@ def CMB_lens_map_creator(**kwargs):
     for i,dd in enumerate(CMB_data):
         alm.append(complex(dd[1],dd[2]))
     alm = np.asarray(alm)
-    logger.info('Generating map with NSIDE %i'%NSIDE)
-    conv_map = hp.alm2map(alm,NSIDE)
+    logger.info('Generating map with NSIDE %i'%nside_out)
+    conv_map = hp.alm2map(alm,nside_out)
 
     if not os.path.exists(os.path.join(X_OUT, 'fits')):
     	os.system('mkdir %s' %os.path.join(X_OUT, 'fits'))
-    out_name = os.path.join(X_OUT, 'fits/'+out_label+'_hp%i.fits'%nside_outi)
+    out_name = os.path.join(X_OUT, 'fits/'+out_label+'_hp%i.fits'%nside_out)
     hp.write_map(out_name, conv_map, coord='G', overwrite=overwrite)
     logger.info('Created %s'%out_name)
 
@@ -74,8 +74,8 @@ def CMB_lens_map_creator(**kwargs):
         import matplotlib as mpl
         mpl.use('Agg')
     	import matplotlib.pyplot as plt
-    	m1 = hp.ud_grade(mm, nside_out=54)
-        hp.mollview(m1)
+    	mm = hp.ud_grade(conv_map, nside_out=64)
+        hp.mollview(mm)
     	plt.show()
     frmaps.close()
 
