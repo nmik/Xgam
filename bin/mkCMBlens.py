@@ -76,7 +76,7 @@ def CMB_lens_map_creator(**kwargs):
     	mm = hp.ud_grade(conv_map, nside_out=64)
         hp.mollview(mm)
     	plt.show()
-    frmaps.close()
+    CMB_file.close()
 
 if __name__ == '__main__':
     args = PARSER.parse_args()
