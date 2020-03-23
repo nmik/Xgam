@@ -56,6 +56,7 @@ RUN conda install -y --name fermi healpy
 WORKDIR /run_xgam
 RUN ls -lh
 RUN git clone https://github.com/nmik/Xgam.git
+#RUN ls /run_xgam/Xgam/bin -lh
 
 # Creating bashrc file
 RUN echo "echo 'Setting Xgam environment...'" > /run_xgam/.bashrc \
@@ -74,5 +75,5 @@ RUN echo "bashrc file:" && less /run_xgam/.bashrc
 WORKDIR /archive/home/sammazza/fermi_data
 RUN mkdir /home/simone/
 # Define entrypoint and default values for args
-#CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /archive/home/sammazza/fermi_data/bash_script.sh"]
-CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /home/simone/bash_script.sh"]
+CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /archive/home/sammazza/fermi_data/bash_script.sh"]
+#CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /home/simone/bash_script.sh"]

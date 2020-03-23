@@ -11,7 +11,7 @@
 #                                                                              #
 #------------------------------------------------------------------------------#
 
-"""Produces foreground maps (work in progress)
+"""Produces CMB lensing maps (work in progress)
 """
 
 import os
@@ -34,7 +34,7 @@ PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
 PARSER.add_argument('-f', '--infile', type=str, required=True,
                     help='input fits file of CMB lensing alm')
-PARSER.add_argument('-o', '--outlabel', type=str, required=True,
+PARSER.add_argument('-o', '--outlabel', type=str, required=False,
                     help='label of CMB output map', default='CMB_lens')
 PARSER.add_argument('--nsideout', type=int, default=512,
                     help='NSIDE of the output HEALPix maps')
@@ -58,7 +58,7 @@ def CMB_lens_map_creator(**kwargs):
     CMB_data = CMB_file[1].data
     logger.info('Filling alm array...')
     alm = []
-    for i,dd in enumerate(mf):
+    for i,dd in enumerate(CMB_data):
         alm.append(complex(dd[1],dd[2]))
     alm = np.asarray(alm)
     logger.info('Generating map with NSIDE %i'%NSIDE)
