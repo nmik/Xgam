@@ -57,10 +57,9 @@ def CMB_lens_map_creator(**kwargs):
     CMB_file = pf.open(input_file) #mean field data from Minimum Variance
     CMB_data = CMB_file[1].data
     logger.info('Filling alm array...')
-    alm = []
-    for i,dd in enumerate(CMB_data):
-        alm.append(complex(dd[1],dd[2]))
-    alm = np.asarray(alm)
+    real = mf['real']
+    imag = mf['imag']
+    alm = real + 1j *imag
     logger.info('Generating map with NSIDE %i'%nside_out)
     conv_map = hp.alm2map(alm,nside_out)
 
