@@ -69,7 +69,7 @@ GTMKTIME_DICT = {'evfile': 'DEFAULT',
                  'clobber': 'no'}
 
 GTBIN_DICT = {'evfile': 'DEFAULT',
-              'algorithm': 'CCUBE',
+              'algorithm': 'HEALPIX',
               'scfile': SC_FILE,
               'hpx_ordering_scheme': 'RING',
               'hpx_order': HPX_MAP_ORDER, 
