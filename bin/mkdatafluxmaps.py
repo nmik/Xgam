@@ -90,7 +90,7 @@ def mkRestyle(**kwargs):
 	outfile = open(outfile_name, 'w')
 	if kwargs['foresub'] == True:
 		outfile.write('#\tE_MIN\tE_MAX\tE_MEAN\tF_MEAN\tFERR_MEAN\tCN\t'+\
-		'FSKY\tFORE_N\tFORE_N_errsx\tFORE_N_errdx\tFORE_CFORE_C_errsx\t'+\
+		'FSKY\tFORE_N\tFORE_N_errsx\tFORE_N_errdx\tFORE_C\tFORE_C_errsx\t'+\
 		'FORE_C_errdx\n')
 		fore_N_, fore_N_errsx_, fore_N_errdx_ = [], [], []	
 		fore_C_, fore_C_errsx_, fore_C_errdx_ = [], [], []
