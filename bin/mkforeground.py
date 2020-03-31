@@ -11,7 +11,7 @@
 #                                                                              #
 #------------------------------------------------------------------------------#
 
-"""Produces sky masks (work in progress)
+"""Produces foreground maps (work in progress)
 """
 
 import os
@@ -40,7 +40,7 @@ PARSER.add_argument('-s', '--show', type=bool, required=False, default=False,
                     help='input fits file of Fermi Foreground model')
 
 def foreground_map_convert(**kwargs):
-    """Viewer interface for healpix maps                                                                
+    """Viewer interface for healpix maps
     """
     input_file = kwargs['infile']
     nside_out = kwargs['nsideout']
@@ -68,10 +68,10 @@ def foreground_map_convert(**kwargs):
                                                         %(nside_out, en))
         out_path = os.path.join(X_OUT, 'fits', out_name)
         if os.path.exists(out_path):
-        	logger.info('Running map convertion for energy %.2f MeV...'%en)
+        	logger.info('Running map conversion for energy %.2f MeV...'%en)
         	logger.info('Retrieving %s'%out_path)
         else:
-        	logger.info('Running map convertion for energy %.2f MeV...'%en)
+        	logger.info('Running map conversion for energy %.2f MeV...'%en)
         	frmap = maps_slices[i]
         	fmt = dict(xname='$l$', xunits='deg', yname='$b$', yunits='deg', zname='Flux [cm$^{-2}$s$^{-1}$sr$^{-1}$]')
         	lon, _indexx = np.unique(lon_fits, return_index=True)
@@ -85,10 +85,12 @@ def foreground_map_convert(**kwargs):
         	hp.write_map(out_path, hp_frmap_out, coord='G')
         	logger.info('Created map %s'%out_path)
     if kwargs['show'] ==  True:
-    	import matplotlib.pyplot as plt 
+        import matplotlib as mpl
+        mpl.use('Agg')
+    	import matplotlib.pyplot as plt
     	plt.figure()
     	plt.plot(energy, fr_e, 'o--')
-    	plt.xlabel('Enrgy [MeV]')
+    	plt.xlabel('Energy [MeV]')
     	plt.xscale('log')
     	plt.ylabel('Flux [cm$^{-2}$s$^{-1}$sr$^{-1}$]')
     	plt.show()
