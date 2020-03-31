@@ -4,7 +4,7 @@
 # On behalf of the Fermi-LAT Collaboration.                                    #
 #                                                                              #
 # This program is free software; you can redistribute it and/or modify         #
-# it under the terms of the GNU GengReral Public License as published by       #
+# it under the terms of the GNU General Public License as published by         #
 # the Free Software Foundation; either version 3 of the License, or            #
 # (at your option) any later version.                                          #
 #                                                                              #
@@ -25,7 +25,32 @@ from Xgam.utils.matplotlib_ import *
 from Xgam.utils.spline_ import xInterpolatedBivariateSplineLinear
 from Xgam.utils.spline_ import xInterpolatedUnivariateSplineLinear
 
+def get_energy_from_fits(fits_file, minbinnum=0, maxbinnum=100, mean='log'):
+    """Returns a list with the center values of the energy bins
 
+       fits_file: str
+           fits file, usually we want to do to this at the level of
+           gtbin output file
+       mean: str
+           'log' or 'lin', depending on the algorithm to use to 
+           compute the mean
+    """
+    f = pf.open(fits_file)
+    f.info()
+    ebounds = f[1].data
+    _emin = ebounds['E_MIN'][minbinnum:maxbinnum]/1000
+    _emax = ebounds['E_MAX'][minbinnum:maxbinnum]/1000
+    emean = []        
+    if mean == 'log':
+        for emin, emax in zip(_emin, _emax):
+            emean.append(np.sqrt(emin*emax))
+    if mean == 'lin':
+        for emin, emax in zip(_emin, _emax):
+            emean.append(0.5*(emin+emax))
+    f.close()
+    return np.array(_emin), np.array(_emax), np.array(emean)
+    
+    
 def get_psf_th_en_bivariatespline(PSF_FILE, show=False):
     """ Get the PSF from the fits file created by gtpsf       
     
@@ -90,6 +115,10 @@ def get_psf_en_univariatespline(PSF_FILE, show=False):
 if __name__ == '__main__': 
 	""" test module
 	"""
+	ebin_f = 'output/ebinning.fits'
+	emin, emax, emean = get_energy_from_fits(ebin_f)
+	print(emean)
+	
 	psf_f = os.path.join(X_CONFIG, 'fits/psf_SV_t32.fits')
 	psf_bispline = get_psf_th_en_bivariatespline(psf_f, show=True)
 	psf_unispline = get_psf_en_univariatespline(psf_f, show=True)
