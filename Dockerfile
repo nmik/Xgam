@@ -54,7 +54,7 @@ RUN conda install -y --name fermi healpy
 
 # Clone Xgam
 WORKDIR /run_xgam
-RUN ls -lh
+#RUN ls -lh
 RUN git clone https://github.com/nmik/Xgam.git
 #RUN ls /run_xgam/Xgam/bin -lh
 
