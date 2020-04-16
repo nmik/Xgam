@@ -27,6 +27,7 @@ import argparse
 import numpy as np
 import healpy as hp
 import astropy.io.fits as pf
+from scipy.interpolate import interp1d
 
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger, startmsg
@@ -80,6 +81,7 @@ def mkRestyle(**kwargs):
 	in_labels_list = data.IN_LABELS_LIST
 	mask_file = data.MASK_FILE
 	micro_bin_file = data.MICRO_BINS_FILE
+    igrb_file = data.IGRB_FILE
 
 	outfile_name = os.path.join(X_OUT, '%s_%s_%s_datafluxmaps.txt' \
 									%(out_label, mask_label, binning_label))
@@ -117,7 +119,7 @@ def mkRestyle(**kwargs):
 		else:
 			pass
 		mask = hp.read_map(mask_file)
-		_unmasked = np.where(mask != 0)[0]
+		_unmasked = np.where(mask > 0)[0]
 		fsky = float(len(_unmasked)/len(mask))
 		FSKY_.append(fsky)
 		logger.info('>>----> FSKY = %e'%fsky)
@@ -189,13 +191,16 @@ def mkRestyle(**kwargs):
 			for b, mb in enumerate(micro_bins):
 				fore_model_map = get_fore_integral_flux_map(fore_files, emin[b], emax[b])
 				micro_fore_map_.append(fore_model_map)
+				igrb_data = np.genfromtxt(igrb_file)
+				igrb_interp = interp1d(igrb_data[:,0],igrb_data[:,1])
+				c_guess = igrb_interp(energy)
 				n, c, n_sx, n_dx, c_sx, c_dx = \
 								   fit_foreground_poisson(fore_model_map,
 														  time_sum_cnt_[b],
 														  mask_map=mask,
 														  exp=time_sum_exp_[b],
 														  n_guess=1.,
-														  c_guess=1.e-10)
+														  c_guess=c_guess)
 				micro_fore_N_.append(n)
 				micro_fore_N_errsx_.append(n_sx)
 				micro_fore_N_errdx_.append(n_dx)

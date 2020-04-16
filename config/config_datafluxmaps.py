@@ -35,6 +35,7 @@ MICRO_BINS_FILE = os.path.join(X_OUT, 'ebinning.fits')
 MACRO_BINS = [(27,32),(33, 38)]
 
 POWER_LAW_INDEX = 2.30
+IGRB_FILE = os.path.join(X_OUT, 'data/iso_P8R3_SOURCEVETO_V2_v1.txt') #None if foreground subtraction is not performed
 
 MASK_FILE = os.path.join(X_OUT, 'fits/Mask_gp25_4fgl_extsrc.fits')  #'None' if no mask is needed
 MASK_LABEL = 'mymask'

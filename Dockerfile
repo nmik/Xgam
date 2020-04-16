@@ -72,6 +72,8 @@ RUN echo "echo 'Setting Xgam environment...'" > /run_xgam/.bashrc \
    && echo "echo 'Done.'" >> /run_xgam/.bashrc \
 RUN echo "bashrc file:" && less /run_xgam/.bashrc
 
+RUN apt-get update && apt-get install -y libgl1-mesa-dev
+
 WORKDIR /archive/home/sammazza/fermi_data
 RUN mkdir /home/simone/
 # Define entrypoint and default values for args
