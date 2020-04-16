@@ -36,10 +36,9 @@ def get_energy_from_fits(fits_file, minbinnum=0, maxbinnum=100, mean='log'):
            compute the mean
     """
     f = pf.open(fits_file)
-    f.info()
     ebounds = f[1].data
-    _emin = ebounds['E_MIN'][minbinnum:maxbinnum]/1000
-    _emax = ebounds['E_MAX'][minbinnum:maxbinnum]/1000
+    _emin = ebounds['E_MIN'][minbinnum:maxbinnum+1]/1000
+    _emax = ebounds['E_MAX'][minbinnum:maxbinnum+1]/1000
     emean = []        
     if mean == 'log':
         for emin, emax in zip(_emin, _emax):
