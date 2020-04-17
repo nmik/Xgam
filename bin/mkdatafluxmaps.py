@@ -46,6 +46,9 @@ PARSER.add_argument('-c', '--config', type=str, required=True,
 PARSER.add_argument('--foresub', type=ast.literal_eval, choices=[True, False],
                     default='True',
                     help='galactic foreground subtraction activated')
+PARSER.add_argument('--overwrite', type=ast.literal_eval, choices=[True, False],
+                    default='True',
+                    help='verwrite existing maps')
 PARSER.add_argument('--nforefit', type=str, choices=['n', 'nlow', 'nhigh'],
                     default='n',
                     help='galactic foreground normalization: N,lower-end, upper-end')
@@ -81,11 +84,12 @@ def mkRestyle(**kwargs):
 	in_labels_list = data.IN_LABELS_LIST
 	mask_file = data.MASK_FILE
 	micro_bin_file = data.MICRO_BINS_FILE
-    igrb_file = data.IGRB_FILE
-
+	igrb_file = data.IGRB_FILE
+	
+	overwrite = kwargs['overwrite']
 	outfile_name = os.path.join(X_OUT, '%s_%s_%s_datafluxmaps.txt' \
 									%(out_label, mask_label, binning_label))
-	if os.path.exists(outfile_name):
+	if os.path.exists(outfile_name) and not overwrite:
 		logger.info('ATT: Output file already exists!')
 		logger.info(outfile_name)
 		sys.exit()
@@ -158,10 +162,10 @@ def mkRestyle(**kwargs):
 					txt.close()
 				logger.info('Summing in time and saving micro cnt and exp maps...')
 				micro_cnt_map = np.sum(np.array(t_micro_cnt_maps), axis=0)
-				hp.write_map(micro_cnt_name, micro_cnt_map)
+				hp.write_map(micro_cnt_name, micro_cnt_map,overwrite=overwrite)
 				time_sum_cnt_.append(micro_cnt_map)
 				micro_exp_map = np.sum(np.array(t_micro_exp_maps), axis=0)
-				hp.write_map(micro_exp_name, micro_exp_map)
+				hp.write_map(micro_exp_name, micro_exp_map,overwrite=overwrite)
 				time_sum_exp_.append(micro_exp_map)
 
 		time_sum_cnt_ = np.array(time_sum_cnt_)
@@ -193,6 +197,7 @@ def mkRestyle(**kwargs):
 				micro_fore_map_.append(fore_model_map)
 				igrb_data = np.genfromtxt(igrb_file)
 				igrb_interp = interp1d(igrb_data[:,0],igrb_data[:,1])
+				energy = np.sqrt(emin[b]*emax[b])
 				c_guess = igrb_interp(energy)
 				n, c, n_sx, n_dx, c_sx, c_dx = \
 								   fit_foreground_poisson(fore_model_map,
@@ -255,8 +260,8 @@ def mkRestyle(**kwargs):
 									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
 		if not os.path.exists(out_flx_folder):
 			os.makedirs(out_flx_folder)
-		hp.write_map(macro_flx_name, time_ene_sum_flux_)
-		hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked)
+		hp.write_map(macro_flx_name, time_ene_sum_flux_,overwrite=overwrite)
+		hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked,overwrite=overwrite)
 
 	logger.info('Writing output file...')
 	if kwargs['foresub'] == True:
