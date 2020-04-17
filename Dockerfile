@@ -50,8 +50,9 @@ ENV PATH /run_xgam/anaconda2/bin:$PATH
 RUN conda update -n base -c defaults conda
 RUN conda config --add channels conda-forge
 RUN conda create -n fermi -c conda-forge/label/cf201901 -c fermi fermitools
-RUN conda install -y --name fermi healpy
+RUN conda install -y --name fermi healpy numba
 
+RUN apt-get update && apt-get install -y libgl1-mesa-dev
 # Clone Xgam
 WORKDIR /run_xgam
 #RUN ls -lh
@@ -71,8 +72,6 @@ RUN echo "echo 'Setting Xgam environment...'" > /run_xgam/.bashrc \
    && echo "export HEALPIX=/Healpix_latest" >> /run_xgam/.bashrc \
    && echo "echo 'Done.'" >> /run_xgam/.bashrc \
 RUN echo "bashrc file:" && less /run_xgam/.bashrc
-
-RUN apt-get update && apt-get install -y libgl1-mesa-dev
 
 WORKDIR /archive/home/sammazza/fermi_data
 RUN mkdir /home/simone/

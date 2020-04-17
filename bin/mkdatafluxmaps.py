@@ -17,7 +17,7 @@
                     the total counts and exposures. Counts and exposure maps
                     in each micro energy bins are saved in output/output_counts/.
                     Those maps are automatically retrieved if already present in
-                    the folder.
+                    the folder and overwrite keyword is False.
 """
 
 import os
@@ -47,7 +47,7 @@ PARSER.add_argument('--foresub', type=ast.literal_eval, choices=[True, False],
                     default='True',
                     help='galactic foreground subtraction activated')
 PARSER.add_argument('--overwrite', type=ast.literal_eval, choices=[True, False],
-                    default='True',
+                    default='False',
                     help='verwrite existing maps')
 PARSER.add_argument('--nforefit', type=str, choices=['n', 'nlow', 'nhigh'],
                     default='n',
@@ -85,14 +85,17 @@ def mkRestyle(**kwargs):
 	mask_file = data.MASK_FILE
 	micro_bin_file = data.MICRO_BINS_FILE
 	igrb_file = data.IGRB_FILE
-	
+
 	overwrite = kwargs['overwrite']
 	outfile_name = os.path.join(X_OUT, '%s_%s_%s_datafluxmaps.txt' \
 									%(out_label, mask_label, binning_label))
-	if os.path.exists(outfile_name) and not overwrite:
+	if os.path.exists(outfile_name):
 		logger.info('ATT: Output file already exists!')
 		logger.info(outfile_name)
-		sys.exit()
+		if not overwrite:
+		    sys.exit()
+		else:
+		    logger.info('ATT: Overwriting files!')
 	outfile = open(outfile_name, 'w')
 	if kwargs['foresub'] == True:
 		outfile.write('#\tE_MIN\tE_MAX\tE_MEAN\tF_MEAN\tFERR_MEAN\tCN\t'+\
@@ -138,7 +141,7 @@ def mkRestyle(**kwargs):
 											%(out_label, mb))
 			micro_exp_name = os.path.join(X_OUT, 'output_count/%s_exposure_%i.fits'
 										  %(out_label, mb))
-			if os.path.exists(micro_cnt_name) and os.path.exists(micro_exp_name):
+			if os.path.exists(micro_cnt_name) and os.path.exists(micro_exp_name) and not overwrite:
 				logger.info('Counts and exposure maps ready! Retriving them...')
 				cnt_map = hp.read_map(micro_cnt_name)
 				exp_map = hp.read_map(micro_exp_name)
