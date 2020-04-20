@@ -85,6 +85,7 @@ def mkRestyle(**kwargs):
 	mask_file = data.MASK_FILE
 	micro_bin_file = data.MICRO_BINS_FILE
 	igrb_file = data.IGRB_FILE
+	bincalc = data.BINCALC
 
 	overwrite = kwargs['overwrite']
 	outfile_name = os.path.join(X_OUT, '%s_%s_%s_datafluxmaps.txt' \
@@ -127,7 +128,7 @@ def mkRestyle(**kwargs):
 			pass
 		mask = hp.read_map(mask_file)
 		_unmasked = np.where(mask > 0)[0]
-		fsky = float(len(_unmasked)/len(mask))
+		fsky = float(len(_unmasked)*1.0/len(mask))
 		FSKY_.append(fsky)
 		logger.info('>>----> FSKY = %e'%fsky)
 
@@ -159,8 +160,14 @@ def mkRestyle(**kwargs):
 							cnt_map = (hp.read_map(line.replace('\n', ''), field=mb))
 							t_micro_cnt_maps.append(cnt_map)
 						if 'gtexpcube2' in line:
-							emap = hp.read_map(line.replace('\n', ''), field=range(mb, mb+2))
-							emap_mean = np.sqrt(emap[:-1]*emap[1:])
+						    if bincalc == 'CENTER':
+						        emap_mean = hp.read_map(line.replace('\n', ''), field=mb)
+						    elif bincalc == 'EDGE':
+						        emap = hp.read_map(line.replace('\n', ''), field=range(mb, mb+2))
+						        emap_mean = np.sqrt(emap[:-1]*emap[1:])
+						    else:
+						        logger.info('ATT: Invalid bincalc!')
+						        sys.exit()
 							t_micro_exp_maps.append(emap_mean)
 					txt.close()
 				logger.info('Summing in time and saving micro cnt and exp maps...')
@@ -177,7 +184,7 @@ def mkRestyle(**kwargs):
 		logger.info('Computing Poisson noise term...')
 		npix = len(time_sum_cnt_[0])
 		sr = 4*np.pi/npix
-		CN_maps = time_sum_cnt_/time_sum_exp_**2/sr
+		CN_maps = np.array(time_sum_cnt_/time_sum_exp_**2/sr)
 		micro_CN = 0
 		for b, mb in enumerate(micro_bins):
 			micro_CN = micro_CN + np.mean(CN_maps[b][_unmasked])
