@@ -17,7 +17,7 @@
                     the total counts and exposures. Counts and exposure maps
                     in each micro energy bins are saved in output/output_counts/.
                     Those maps are automatically retrieved if already present in
-                    the folder.
+                    the folder and overwrite keyword is False.
 """
 
 import os
@@ -27,6 +27,7 @@ import argparse
 import numpy as np
 import healpy as hp
 import astropy.io.fits as pf
+from scipy.interpolate import interp1d
 
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger, startmsg
@@ -45,6 +46,9 @@ PARSER.add_argument('-c', '--config', type=str, required=True,
 PARSER.add_argument('--foresub', type=ast.literal_eval, choices=[True, False],
                     default='True',
                     help='galactic foreground subtraction activated')
+PARSER.add_argument('--overwrite', type=ast.literal_eval, choices=[True, False],
+                    default='False',
+                    help='verwrite existing maps')
 PARSER.add_argument('--nforefit', type=str, choices=['n', 'nlow', 'nhigh'],
                     default='n',
                     help='galactic foreground normalization: N,lower-end, upper-end')
@@ -80,13 +84,19 @@ def mkRestyle(**kwargs):
 	in_labels_list = data.IN_LABELS_LIST
 	mask_file = data.MASK_FILE
 	micro_bin_file = data.MICRO_BINS_FILE
+	igrb_file = data.IGRB_FILE
+	bincalc = data.BINCALC
 
+	overwrite = kwargs['overwrite']
 	outfile_name = os.path.join(X_OUT, '%s_%s_%s_datafluxmaps.txt' \
 									%(out_label, mask_label, binning_label))
 	if os.path.exists(outfile_name):
 		logger.info('ATT: Output file already exists!')
 		logger.info(outfile_name)
-		sys.exit()
+		if not overwrite:
+		    sys.exit()
+		else:
+		    logger.info('ATT: Overwriting files!')
 	outfile = open(outfile_name, 'w')
 	if kwargs['foresub'] == True:
 		outfile.write('#\tE_MIN\tE_MAX\tE_MEAN\tF_MEAN\tFERR_MEAN\tCN\t'+\
@@ -117,8 +127,8 @@ def mkRestyle(**kwargs):
 		else:
 			pass
 		mask = hp.read_map(mask_file)
-		_unmasked = np.where(mask != 0)[0]
-		fsky = float(len(_unmasked)/len(mask))
+		_unmasked = np.where(mask > 0)[0]
+		fsky = float(len(_unmasked)*1./len(mask))
 		FSKY_.append(fsky)
 		logger.info('>>----> FSKY = %e'%fsky)
 
@@ -132,7 +142,7 @@ def mkRestyle(**kwargs):
 											%(out_label, mb))
 			micro_exp_name = os.path.join(X_OUT, 'output_count/%s_exposure_%i.fits'
 										  %(out_label, mb))
-			if os.path.exists(micro_cnt_name) and os.path.exists(micro_exp_name):
+			if os.path.exists(micro_cnt_name) and os.path.exists(micro_exp_name) and not overwrite:
 				logger.info('Counts and exposure maps ready! Retriving them...')
 				cnt_map = hp.read_map(micro_cnt_name)
 				exp_map = hp.read_map(micro_exp_name)
@@ -150,16 +160,22 @@ def mkRestyle(**kwargs):
 							cnt_map = (hp.read_map(line.replace('\n', ''), field=mb))
 							t_micro_cnt_maps.append(cnt_map)
 						if 'gtexpcube2' in line:
-							emap = hp.read_map(line.replace('\n', ''), field=range(mb, mb+2))
-							emap_mean = np.sqrt(emap[:-1]*emap[1:])
-							t_micro_exp_maps.append(emap_mean)
+						    if bincalc == 'CENTER':
+						        emap_mean = hp.read_map(line.replace('\n', ''), field=mb)
+						    elif bincalc == 'EDGE':
+						        emap = hp.read_map(line.replace('\n', ''), field=range(mb, mb+2))
+						        emap_mean = np.sqrt(emap[:-1]*emap[1:])
+						    else:
+						        logger.info('ATT: Invalid bincalc!')
+						        sys.exit()
+						    t_micro_exp_maps.append(emap_mean)
 					txt.close()
 				logger.info('Summing in time and saving micro cnt and exp maps...')
 				micro_cnt_map = np.sum(np.array(t_micro_cnt_maps), axis=0)
-				hp.write_map(micro_cnt_name, micro_cnt_map)
+				hp.write_map(micro_cnt_name, micro_cnt_map,overwrite=overwrite)
 				time_sum_cnt_.append(micro_cnt_map)
 				micro_exp_map = np.sum(np.array(t_micro_exp_maps), axis=0)
-				hp.write_map(micro_exp_name, micro_exp_map)
+				hp.write_map(micro_exp_name, micro_exp_map,overwrite=overwrite)
 				time_sum_exp_.append(micro_exp_map)
 
 		time_sum_cnt_ = np.array(time_sum_cnt_)
@@ -168,7 +184,7 @@ def mkRestyle(**kwargs):
 		logger.info('Computing Poisson noise term...')
 		npix = len(time_sum_cnt_[0])
 		sr = 4*np.pi/npix
-		CN_maps = time_sum_cnt_/time_sum_exp_**2/sr
+		CN_maps = np.array(time_sum_cnt_/time_sum_exp_**2/sr)
 		micro_CN = 0
 		for b, mb in enumerate(micro_bins):
 			micro_CN = micro_CN + np.mean(CN_maps[b][_unmasked])
@@ -189,13 +205,17 @@ def mkRestyle(**kwargs):
 			for b, mb in enumerate(micro_bins):
 				fore_model_map = get_fore_integral_flux_map(fore_files, emin[b], emax[b])
 				micro_fore_map_.append(fore_model_map)
+				igrb_data = np.genfromtxt(igrb_file)
+				igrb_interp = interp1d(igrb_data[:,0],igrb_data[:,1])
+				energy = np.sqrt(emin[b]*emax[b])
+				c_guess = igrb_interp(energy)
 				n, c, n_sx, n_dx, c_sx, c_dx = \
 								   fit_foreground_poisson(fore_model_map,
 														  time_sum_cnt_[b],
 														  mask_map=mask,
 														  exp=time_sum_exp_[b],
 														  n_guess=1.,
-														  c_guess=1.e-10)
+														  c_guess=c_guess)
 				micro_fore_N_.append(n)
 				micro_fore_N_errsx_.append(n_sx)
 				micro_fore_N_errdx_.append(n_dx)
@@ -250,8 +270,8 @@ def mkRestyle(**kwargs):
 									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
 		if not os.path.exists(out_flx_folder):
 			os.makedirs(out_flx_folder)
-		hp.write_map(macro_flx_name, time_ene_sum_flux_)
-		hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked)
+		hp.write_map(macro_flx_name, time_ene_sum_flux_,overwrite=overwrite)
+		hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked,overwrite=overwrite)
 
 	logger.info('Writing output file...')
 	if kwargs['foresub'] == True:

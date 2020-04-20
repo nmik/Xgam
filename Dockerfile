@@ -50,8 +50,9 @@ ENV PATH /run_xgam/anaconda2/bin:$PATH
 RUN conda update -n base -c defaults conda
 RUN conda config --add channels conda-forge
 RUN conda create -n fermi -c conda-forge/label/cf201901 -c fermi fermitools
-RUN conda install -y --name fermi healpy
+RUN conda install -y --name fermi healpy numba
 
+RUN apt-get update && apt-get install -y libgl1-mesa-dev
 # Clone Xgam
 WORKDIR /run_xgam
 #RUN ls -lh
