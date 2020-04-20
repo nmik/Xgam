@@ -128,7 +128,7 @@ def mkRestyle(**kwargs):
 			pass
 		mask = hp.read_map(mask_file)
 		_unmasked = np.where(mask > 0)[0]
-		fsky = float(len(_unmasked)*1.0/len(mask))
+		fsky = float(len(_unmasked)*1./len(mask))
 		FSKY_.append(fsky)
 		logger.info('>>----> FSKY = %e'%fsky)
 
@@ -168,7 +168,7 @@ def mkRestyle(**kwargs):
 						    else:
 						        logger.info('ATT: Invalid bincalc!')
 						        sys.exit()
-							t_micro_exp_maps.append(emap_mean)
+						    t_micro_exp_maps.append(emap_mean)
 					txt.close()
 				logger.info('Summing in time and saving micro cnt and exp maps...')
 				micro_cnt_map = np.sum(np.array(t_micro_cnt_maps), axis=0)
