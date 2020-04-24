@@ -76,7 +76,6 @@ def mkRestyle(**kwargs):
 	get_var_from_file(kwargs['config'])
 	fore_files = data.FORE_FILES_LIST
 	macro_bins = data.MACRO_BINS
-	gamma = data.POWER_LAW_INDEX
 	out_label = data.OUT_LABEL
 	mask_label = data.MASK_LABEL
 	fore_label = data.FORE_LABEL
