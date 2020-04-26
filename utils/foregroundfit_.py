@@ -18,6 +18,7 @@ from numba import jit
 import astropy.io.fits as pf
 from itertools import product
 from scipy.special import factorial 
+import matplotlib.pyplot as plt
 
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger, startmsg
@@ -298,7 +299,6 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
         _igrb_ind = np.array(_igrb_ind)
         plt.contourf(z, [zmin, zmin+2.3, zmin+4.61, zmin+5.99], 
                      colors='w', origin='lower', alpha=0.3)
-        plt.scatter(igrb_min_ind, norm_min_ind, s=45, c='w', marker='+')
         plt.show()
     return norm_min, igrb_min, _norm[0], _norm[-1], np.amin(_igrb), \
         np.amax(_igrb)
