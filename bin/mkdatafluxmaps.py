@@ -232,35 +232,50 @@ def mkRestyle(**kwargs):
 
 			### compute the flux
 			micro_flx_foresub_map_ = []
+			micro_flxerr_foresub_map_ = []
 			for b, mb in enumerate(micro_bins):
 				micro_time_sum_flux = time_sum_cnt_[b]/time_sum_exp_[b]/sr
 				if kwargs['nforefit'] == 'nlow':
 					logger.info('Considering N = lower end')
-					micro_flux_forsesub = micro_time_sum_flux - micro_fore_N_errsx_[b]*micro_fore_map_[b]
+					fore_norm_flux = micro_fore_N_errsx_[b]*micro_fore_map_[b]
+					fore_norm_count = fore_norm_flux*time_sum_exp_[b]*sr
+					micro_flux_forsesub = micro_time_sum_flux - fore_norm_flux
+					micro_sqrtcount_forsesub = np.sqrt(time_sum_cnt_[b] - fore_norm_count)
+					micro_fluxerr_forsesub = micro_sqrtcount_forsesub/time_sum_exp_[b]/sr
 				elif kwargs['nforefit'] == 'nhigh':
 					logger.info('Considering N = upper end')
-					micro_flux_forsesub = micro_time_sum_flux - micro_fore_N_errdx_[b]*micro_fore_map_[b]
+					fore_norm_flux = micro_fore_N_errdx_[b]*micro_fore_map_[b]
+					fore_norm_count = fore_norm_flux*time_sum_exp_[b]*sr
+					micro_flux_forsesub = micro_time_sum_flux - fore_norm_flux
+					micro_sqrtcount_forsesub = np.sqrt(time_sum_cnt_[b] - fore_norm_count)
+					micro_fluxerr_forsesub = micro_sqrtcount_forsesub/time_sum_exp_[b]/sr
 				else:
-					micro_flux_forsesub = micro_time_sum_flux - micro_fore_N_[b]*micro_fore_map_[b]
+					fore_norm_flux = micro_fore_N_[b]*micro_fore_map_[b]
+					fore_norm_count = (fore_norm_flux*time_sum_exp_[b]*sr).astype(int)
+					micro_flux_forsesub = micro_time_sum_flux - fore_norm_flux
+					micro_sqrtcount_forsesub = np.sqrt(time_sum_cnt_[b]-fore_norm_count)
+					micro_fluxerr_forsesub = micro_sqrtcount_forsesub/time_sum_exp_[b]/sr
 				micro_flx_foresub_map_.append(micro_flux_forsesub)
+				micro_flxerr_foresub_map_.append(micro_fluxerr_forsesub)
 			time_sum_flux_ = np.array(micro_flx_foresub_map_)
-			time_sum_fluxerr_ = np.sqrt(time_sum_cnt_)/time_sum_exp_/sr
+			time_sum_fluxerr_ = np.array(micro_flxerr_foresub_map_)
 		else:
 			logger.info('Computing the flux for each micro energy bin...')
 			time_sum_flux_ = time_sum_cnt_/time_sum_exp_/sr
 			time_sum_fluxerr_ = np.sqrt(time_sum_cnt_)/time_sum_exp_/sr
 
 		time_ene_sum_flux_ = np.sum(time_sum_flux_, axis=0)
-		time_ene_sum_fluxerr_ = np.sum(time_sum_flux_, axis=0)
+		time_ene_sum_fluxerr_ = np.sqrt(np.sum(time_sum_fluxerr_**2, axis=0))
+		
 		time_ene_sum_flux_masked = hp.ma(time_ene_sum_flux_)
 		time_ene_sum_flux_masked.mask = np.logical_not(mask)
 
 		MACRO_MEAN_FLUX = np.average(time_ene_sum_flux_[_unmasked])
-		MACRO_MEAN_FLUX_ERR = np.sqrt(np.mean(time_ene_sum_fluxerr_[_unmasked]**2))
+		MACRO_MEAN_FLUX_ERR = np.nanmean(time_ene_sum_fluxerr_[_unmasked])
 		FLUX_.append(MACRO_MEAN_FLUX)
 		FLUX_ERR_.append(MACRO_MEAN_FLUX_ERR)
-		logger.info('>>----> MEAN FLUX = %.2e+-%.2e [cm-2s-1sr-1]'
-												%(MACRO_MEAN_FLUX, MACRO_MEAN_FLUX_ERR))
+		logger.info('>>----> MEAN FLUX = %.2e [cm-2s-1sr-1]' %MACRO_MEAN_FLUX)
+		logger.info('>>----> MEAN FLUX ERR / PIX = %.2e [cm-2s-1sr-1]' %MACRO_MEAN_FLUX_ERR)
 
 		logger.info('Saving macro flux maps...')
 		out_flx_folder = os.path.join(X_OUT, 'output_flux')
