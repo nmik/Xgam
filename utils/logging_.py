@@ -20,13 +20,13 @@ import time
 
 
 logger = logging.getLogger('Xgam')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 """ Configure the main terminal logger.
 """
 consoleHandler = logging.StreamHandler()
-consoleHandler.setLevel(logging.DEBUG)
+consoleHandler.setLevel(logging.INFO)
 consoleFormatter = logging.Formatter(">>> %(message)s")
 consoleHandler.setFormatter(consoleFormatter)
 logger.addHandler(consoleHandler)
@@ -51,7 +51,7 @@ def startmsg():
     print('    Autor: Michela Negro, University of Torino.')
     print('    On behalf of the Fermi-LAT Collaboration.\n')
     print('    This is a framework created to prepare Fermi-LAT data')
-    print('    for some cross-correlation analyses. \n') 
+    print('    for some cross-correlation analyses. \n')
     print('    (Fermi data release %s). \n\n' %FERMI_DATA_RELEASE)
 
 if __name__ == '__main__':
