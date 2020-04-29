@@ -207,7 +207,8 @@ def mkRestyle(**kwargs):
 				igrb_data = np.genfromtxt(igrb_file)
 				igrb_interp = interp1d(igrb_data[:,0],igrb_data[:,1])
 				energy = np.sqrt(emin[b]*emax[b])
-				c_guess = igrb_interp(energy)
+				delta_en = emax[b]-emin[b]
+				c_guess = igrb_interp(energy)*energy**2/delta_en
 				n, c, n_sx, n_dx, c_sx, c_dx = \
 								   fit_foreground_poisson(fore_model_map,
 														  time_sum_cnt_[b],
