@@ -266,7 +266,7 @@ def mkRestyle(**kwargs):
 
 		time_ene_sum_flux_ = np.sum(time_sum_flux_, axis=0)
 		time_ene_sum_fluxerr_ = np.sqrt(np.sum(time_sum_fluxerr_**2, axis=0))
-		
+
 		time_ene_sum_flux_masked = hp.ma(time_ene_sum_flux_)
 		time_ene_sum_flux_masked.mask = np.logical_not(mask)
 
@@ -297,7 +297,7 @@ def mkRestyle(**kwargs):
 						    fore_C_[i], fore_C_errsx_[i], fore_C_errdx_[i]))
 	else:
 		for i in range(len(FLUX_)):
-			outfile.write('%.2f\t%.2f\t%.2f\t%/2e\t%.2e\t%.2e\t%f\n' \
+			outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%f\n' \
 						  %(E_MIN_[i], E_MAX_[i], E_MEAN_[i], FLUX_[i], FLUX_ERR_[i],
 						  CN_[i], FSKY_[i]))
 
