@@ -223,12 +223,12 @@ def mkRestyle(**kwargs):
 				micro_fore_C_errsx_.append(c_sx)
 				micro_fore_C_errdx_.append(c_dx)
 
-			fore_N_.append(np.mean(np.array(n)))
-			fore_N_errsx_.append(np.amin(np.array(n_sx)))
-			fore_N_errdx_.append(np.amax(np.array(n_dx)))
-			fore_C_.append(np.mean(np.array(c)))
-			fore_C_errsx_.append(np.amin(np.array(c_sx)))
-			fore_C_errdx_.append(np.amax(np.array(c_dx)))
+			fore_N_.append(np.mean(micro_fore_N_))
+			fore_N_errsx_.append(np.amin(micro_fore_N_errsx_))
+			fore_N_errdx_.append(np.amax(micro_fore_N_errdx_))
+			fore_C_.append(np.sum(micro_fore_C_))
+			fore_C_errsx_.append(np.sum(micro_fore_C_errsx_))
+			fore_C_errdx_.append(np.sum(micro_fore_C_errdx_))
 
 			### compute the flux
 			micro_flx_foresub_map_ = []
