@@ -48,7 +48,7 @@ PARSER.add_argument('--foresub', type=ast.literal_eval, choices=[True, False],
                     help='galactic foreground subtraction activated')
 PARSER.add_argument('--overwrite', type=ast.literal_eval, choices=[True, False],
                     default='False',
-                    help='verwrite existing maps')
+                    help='overwrite existing maps')
 PARSER.add_argument('--nforefit', type=str, choices=['n', 'nlow', 'nhigh'],
                     default='n',
                     help='galactic foreground normalization: N,lower-end, upper-end')
@@ -141,7 +141,7 @@ def mkRestyle(**kwargs):
 											%(out_label, mb))
 			micro_exp_name = os.path.join(X_OUT, 'output_count/%s_exposure_%i.fits'
 										  %(out_label, mb))
-			if os.path.exists(micro_cnt_name) and os.path.exists(micro_exp_name) and not overwrite:
+			if os.path.exists(micro_cnt_name) and os.path.exists(micro_exp_name):
 				logger.info('Counts and exposure maps ready! Retriving them...')
 				cnt_map = hp.read_map(micro_cnt_name)
 				exp_map = hp.read_map(micro_exp_name)
@@ -171,10 +171,10 @@ def mkRestyle(**kwargs):
 					txt.close()
 				logger.info('Summing in time and saving micro cnt and exp maps...')
 				micro_cnt_map = np.sum(np.array(t_micro_cnt_maps), axis=0)
-				hp.write_map(micro_cnt_name, micro_cnt_map,overwrite=overwrite)
+				hp.write_map(micro_cnt_name, micro_cnt_map, overwrite=overwrite)
 				time_sum_cnt_.append(micro_cnt_map)
 				micro_exp_map = np.sum(np.array(t_micro_exp_maps), axis=0)
-				hp.write_map(micro_exp_name, micro_exp_map,overwrite=overwrite)
+				hp.write_map(micro_exp_name, micro_exp_map, overwrite=overwrite)
 				time_sum_exp_.append(micro_exp_map)
 
 		time_sum_cnt_ = np.array(time_sum_cnt_)
@@ -285,8 +285,8 @@ def mkRestyle(**kwargs):
 									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
 		if not os.path.exists(out_flx_folder):
 			os.makedirs(out_flx_folder)
-		hp.write_map(macro_flx_name, time_ene_sum_flux_,overwrite=overwrite)
-		hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked,overwrite=overwrite)
+		hp.write_map(macro_flx_name, time_ene_sum_flux_, overwrite=overwrite)
+		hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked, overwrite=overwrite)
 
 	logger.info('Writing output file...')
 	if kwargs['foresub'] == True:
