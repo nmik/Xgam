@@ -66,6 +66,8 @@ PARSER.add_argument('--typesrcmask', type=ast.literal_eval,
                     help='type of weighted sources mask')
 PARSER.add_argument('--show', type=bool, choices=[True, False],
                     default=False, help='if True the mask map is displayed')
+PARSER.add_argument('--overwrite', type=bool, choices=[True, False],
+                    default=False, help='if True overwrite existing masks')
 
 if (sys.version_info > (3, 0)):
     from importlib.machinery import SourceFileLoader
@@ -127,7 +129,8 @@ def mkSmartMask(**kwargs):
     in_labels_list = data.IN_LABELS_LIST
     micro_bin_file = data.MICRO_BINS_FILE
 
-    if kwargs['typesrcmask'] == 1: #NOTE: IMPLEMENT TYPE2 ??
+    #NOTE: IMPLEMENT TYPE2 ??
+    if kwargs['typesrcmask'] == 1:
         from Xgam.utils.mkmask_ import mask_src_fluxPSFweighted_1 as mask_src
     from Xgam.utils.mkmask_ import mask_gp
     from Xgam.utils.parsing_ import get_psf_en_univariatespline
@@ -145,26 +148,29 @@ def mkSmartMask(**kwargs):
         E_MEAN = np.sqrt(emax[0]*emin[-1])
         logger.info('Energies %.1f - %.1f [MeV]' %(E_MIN, E_MAX))
 
-        bad_pix = []
-        mask = np.ones(npix)
-        bad_pix += mask_gp(kwargs['gpcut'], nside)
-        psf_spline = get_psf_en_univariatespline(PSF_FILE)
-        bad_pix += mask_src(src_cat, src_ext_cat, psf_spline, E_MIN, nside)
-
-        for bpix in np.unique(bad_pix):
-            mask[bpix] = 0
-        if not os.path.exists(os.path.join(X_OUT, 'fits')):
-            os.system('mkdir %s' %os.path.join(X_OUT, 'fits'))
         out_name = os.path.join(X_OUT, 'fits/Mask_'+out_label+'_%.1f_MeV.fits'%(E_MIN))
-        fsky = 1-(len(np.unique(bad_pix))/float(npix))
-        logger.info('fsky = %.3f'%fsky)
-        hp.write_map(out_name, mask, coord='G')
-        logger.info('Created %s' %out_name)
+        if os.path.exists(out_name) and not kwargs['overwrite']:
+            logger.info('ATT: %s already exists! \n'%out_name)
+        else:
+            bad_pix = []
+            mask = np.ones(npix)
+            bad_pix += mask_gp(kwargs['gpcut'], nside)
+            psf_spline = get_psf_en_univariatespline(PSF_FILE)
+            bad_pix += mask_src(src_cat, src_ext_cat, psf_spline, E_MIN, nside)
 
-        if kwargs['show'] == True:
-            import matplotlib.pyplot as plt
-            hp.mollview(mask, cmap='bone')
-            plt.show()
+            for bpix in np.unique(bad_pix):
+                mask[bpix] = 0
+            if not os.path.exists(os.path.join(X_OUT, 'fits')):
+                os.system('mkdir %s' %os.path.join(X_OUT, 'fits'))
+            fsky = 1-(len(np.unique(bad_pix))/float(npix))
+            logger.info('fsky = %.3f'%fsky)
+            hp.write_map(out_name, mask, coord='G')
+            logger.info('Created %s \n' %out_name)
+
+            if kwargs['show'] == True:
+                import matplotlib.pyplot as plt
+                hp.mollview(mask, cmap='bone')
+                plt.show()
 
         '''
         #OLD IDEA, NOT ELEGANT
@@ -193,15 +199,15 @@ def mkSmartMask(**kwargs):
         '''
     logger.info('Done!')
 
-def createConfigMask(config_out,data_mask):
-    f = open(config_out, "w")
-    f.write('from Xgam import X_CONFIG\n\n')
-    for k, v in data_mask.items():
-        if type(v) == str:
-            f.write(str(k) + ' = \'' + str(v) + '\'\n')
-        else:
-            f.write(str(k) + ' = ' + str(v) + '\n')
-    f.close()
+#def createConfigMask(config_out,data_mask):
+#    f = open(config_out, "w")
+#    f.write('from Xgam import X_CONFIG\n\n')
+#    for k, v in data_mask.items():
+#        if type(v) == str:
+#            f.write(str(k) + ' = \'' + str(v) + '\'\n')
+#        else:
+#            f.write(str(k) + ' = ' + str(v) + '\n')
+#    f.close()
 
 if __name__ == '__main__':
     args = PARSER.parse_args()
