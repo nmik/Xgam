@@ -179,14 +179,30 @@ def gtexpcube2(label, expcube2_dict):
         logger.info('gtexpcube2 --> CPU time spent: %.2f'%time.clock())
         return OUTFILE
 
-def gtpsf(gtpsf_dict):
-    """gtpsf from Science Tools
+def gtpsf(label, gtpsf_dict):
+    """gtpsf from Science Tools#
 
        gtpsf_dict: python dict
           To define all the parameters
     """
-    expcube = gtpsf_dict['expcube']
-    outfile = gtpsf_dict['outfile']
+    logger.info('Running gtpsf...')
+    LABEL = label
+    OUTPATH = os.path.join(FT_DATA_FOLDER, 'fits')
+    if not os.path.exists(OUTPATH):
+        os.makedirs(OUTPATH)
+    INFILE = os.path.join(OUTPATH, LABEL + '_ltsum.fits')
+    OUTFILE = os.path.join(OUTPATH, LABEL + '_psf.fits')
+    if os.path.exists(OUTFILE):
+        logger.info('ATT: Already created %s'%OUTFILE)
+        return OUTFILE
+    if gtpsf_dict['outfile'] == 'DEFAULT':
+       outfile = OUTFILE
+    else:
+        outfile = gtpsf_dict['outfile']
+    if  gtpsf_dict['expcube'] == 'DEFAULT':
+        expcube = INFILE
+    else:    
+        expcube = gtpsf_dict['expcube']
     irfs = gtpsf_dict['irfs']
     evtype = gtpsf_dict['evtype']
     ra = gtpsf_dict['ra']
@@ -199,6 +215,74 @@ def gtpsf(gtpsf_dict):
     os.system('gtpsf expcube=%s outfile=%s irfs=%s evtype=%i ra=%f dec=%f emin=%e emax=%e nenergies=%i thetamax=%i ntheta=%i' \
                   %(expcube, outfile, irfs, evtype, ra, dec, emin, emax, \
                         nenergies, thetamax, ntheta))
+    logger.info('Created %s'%outfile)
+    logger.info('gtsumlt --> CPU time spent: %.2f'%time.clock())
+    return OUTFILE
+
+def sumLT(label, sumlt_dict):
+    """gtltsum from Science Tools
+
+       sumlt_dict: python dict
+          To define all the parameters
+    """
+    logger.info('Running gtltsum...')
+    LABEL = label
+    OUTPATH = os.path.join(FT_DATA_FOLDER, 'fits')
+    if not os.path.exists(OUTPATH):
+        os.makedirs(OUTPATH)
+    OUTFILE = os.path.join(OUTPATH, LABEL + '_ltsum.fits')
+    if os.path.exists(OUTFILE):
+        logger.info('ATT: Already created %s'%OUTFILE)
+        return OUTFILE
+    else:
+        for key in sumlt_dict:
+            if key == 'outfile':
+                if sumlt_dict[key] == 'DEFAULT':
+                    my_apps.addCubes['outfile'] = OUTFILE
+                else:
+                    my_apps.addCubes[key] = sumlt_dict[key]
+                continue
+            my_apps.addCubes[key] = sumlt_dict[key]
+        my_apps.addCubes.run()
+        logger.info('Created %s'%OUTFILE)
+        logger.info('gtsumlt --> CPU time spent: %.2f'%time.clock())
+        return OUTFILE
+
+#def gtpsf(label, psf_dict):
+#    """gtpsf from Science Tools
+#
+#       psf_dict: python dict
+#          To define all the parameters
+#    """
+#    logger.info('Running gtpsf...')
+#    LABEL = label
+#    OUTPATH = os.path.join(FT_DATA_FOLDER, 'fits')
+#    if not os.path.exists(OUTPATH):
+#        os.makedirs(OUTPATH)
+#    INFILE = os.path.join(OUTPATH, LABEL + '_ltsum.fits')
+#    OUTFILE = os.path.join(OUTPATH, LABEL + '_psf.fits')
+#    if os.path.exists(OUTFILE):
+#        logger.info('ATT: Already created %s'%OUTFILE)
+#        return OUTFILE
+#    else:
+#        for key in psf_dict:
+#            if key == 'outfile':
+#                if psf_dict[key] == 'DEFAULT':
+#                    my_apps.gtpsf['outfile'] = OUTFILE
+#                else:
+#                    my_apps.gtpsf[key] = psf_dict[key]
+#                continue
+#            if key == 'expcube':
+#                if psf_dict[key] == 'DEFAULT':
+#                    my_apps.gtpsf['expcube'] = INFILE
+#                else:
+#                    my_apps.gtpsf[key] = psf_dict[key]
+#                continue
+#            my_apps.gtpsf[key] = psf_dict[key]
+#        my_apps.gtpsf.run()
+#        logger.info('Created %s'%OUTFILE)
+#        logger.info('gtpsf --> CPU time spent: %.2f'%time.clock())
+#        return OUTFILE
 
 def gtEbindef(ebinning_array, file_name='ebinning.txt'):
     """Produces a fits file defining the enrgy binning to fed gtbin.
