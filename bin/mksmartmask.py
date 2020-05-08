@@ -41,10 +41,14 @@ PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
 PARSER.add_argument('-c', '--config', type=str, required=True,
                     help='the input configuration file')
-PARSER.add_argument('--configpsf', type=str, required=False,
-                    help='PSF configuration file')
+PARSER.add_argument('--irfs', type=str, required=False,
+                    help='Instrument Response Functions')
+PARSER.add_argument('--evtype', type=int, required=False,
+                    help='event type')
 PARSER.add_argument('--psffile', type=str, required=False,
                     help='PSF input file', default='default_psf.fits')
+PARSER.add_argument('--ltlist', type=str, required=False,
+                    help='livetimes list file', default='')
 PARSER.add_argument('--srcmask', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='sources mask activated')
@@ -88,18 +92,34 @@ def mkSmartMask(**kwargs):
     """Routine to produce sky maps, according to defined macro-bins.
     """
     logger.info('SmartMask production...')
-    logger.info('Checking PSF file...')
-    #get_var_from_file(kwargs['config'])
+    assert(kwargs['config'].endswith('.py'))
+    get_var_from_file(kwargs['config'])
+    macro_bins = data.MACRO_BINS
+    mask_label = data.MASK_LABEL
+    in_labels_list = data.IN_LABELS_LIST
+    micro_bin_file = data.MICRO_BINS_FILE
+    emin, emax, emean = get_energy_from_fits(micro_bin_file, \
+                        minbinnum=macro_bins[0][0], maxbinnum=macro_bins[-1][1])
+    E_MIN, E_MAX = emin[0], emax[-1]
 
+    logger.info('Checking PSF file...')
     PSF_FILE = kwargs['psffile']
     PSF_FILE = os.path.join(FT_DATA_FOLDER, 'fits/' + PSF_FILE)
     if os.path.exists(PSF_FILE):
         logger.info('OK')
     else:
         logger.info('ATT: File not found: %s'%PSF_FILE)
+        try:
+            IRFS = kwargs['irfs']
+        except:
+            logger.info('ERROR: provide IRFS!')
+            sys.exit()
+        try:
+            EVTYPE = kwargs['evtype']
+        except:
+            logger.info('ERROR: provide event type!')
+            sys.exit()
         logger.info('Creating PSF file...')
-        assert(kwargs['configpsf'].endswith('.py'))
-        get_var_from_file(kwargs['configpsf'])
         try:
             LT_FILE = data.LT_FILE
         except:
@@ -108,26 +128,33 @@ def mkSmartMask(**kwargs):
             logger.info('Livetime file found.')
         else:
             try:
-                label_lt = data.OUT_LABEL_LT
+                LT_LIST = kwargs['ltlist']
             except:
-                label_lt = 'default'
-            lt_dict = data.SUMLT_DICT
+                logger.info('ERROR: provide livetimes list!')
+                sys.exit()
+            label_lt = IRFS + '_evt' + str(EVTYPE)
+            lt_dict = {'infile1' : LT_LIST,
+                       'outfile' : 'DEFAULT',
+                       'chatter': 4,
+                       'clobber': 'no'}
             from Xgam.utils.ScienceTools_ import sumLT
             out_gtltsum = sumLT(label_lt,lt_dict)
         from Xgam.utils.ScienceTools_ import gtpsf
-        try:
-            label_psf = data.OUT_LABEL_PSF
-        except:
-            label_psf = 'default'
-        psf_dict = data.PSF_DICT
+        label_psf =  IRFS + '_evt' + str(EVTYPE)
+        psf_dict = {'expcube' : 'DEFAULT',
+                    'outfile' : 'DEFAULT',
+                    'irfs' : IRFS,
+                    'evtype' : EVTYPE,
+                    'ra' : 45.0,
+                    'dec' : 45.0,
+                    'emin' : E_MIN,
+                    'emax' : E_MAX,
+                    'nenergies' : 500,
+                    'thetamax' : 30.0,
+                    'ntheta' : 100,
+                    'chatter': 4,
+                    'clobber': 'no'}
         PSF_FILE = gtpsf(label_psf,psf_dict)
-
-    assert(kwargs['config'].endswith('.py'))
-    get_var_from_file(kwargs['config'])
-    macro_bins = data.MACRO_BINS
-    mask_label = data.MASK_LABEL
-    in_labels_list = data.IN_LABELS_LIST
-    micro_bin_file = data.MICRO_BINS_FILE
 
     #NOTE: IMPLEMENT TYPE2 ??
     if kwargs['typesrcmask'] == 1:
@@ -164,7 +191,7 @@ def mkSmartMask(**kwargs):
                 os.system('mkdir %s' %os.path.join(X_OUT, 'fits'))
             fsky = 1-(len(np.unique(bad_pix))/float(npix))
             logger.info('fsky = %.3f'%fsky)
-            hp.write_map(out_name, mask, coord='G')
+            hp.write_map(out_name, mask, coord='G', overwrite=True)
             logger.info('Created %s \n' %out_name)
 
             if kwargs['show'] == True:
@@ -172,42 +199,7 @@ def mkSmartMask(**kwargs):
                 hp.mollview(mask, cmap='bone')
                 plt.show()
 
-        '''
-        #OLD IDEA, NOT ELEGANT
-        config_temp = os.path.join(FT_DATA_FOLDER, 'conf_mask.py')
-        data_mask_dict = {'NSIDE' : kwargs['nside'],
-                          'OUT_LABEL' : kwargs['outflabel'],
-                          'SRC_CATALOG' : src_cat,
-                          'EXTSRC_CATALOG': src_ext_cat,
-                          'GP_MASK_LAT' : kwargs['gpcut'],
-                          'PSF_FILE' : PSF_FILE,
-                          'ENERGY' : np.round(E_MIN,1)}
-        mask_dict = {'config': config_temp,
-                 'srcmask' : False,
-                 'extsrcmask' : False,
-                 'gpmask' : 'flat',
-                 'srcweightedmask' : True,
-                 'srcweightedmask2' : False,
-                 'northmask' : False,
-                 'southmask' : False
-                 }
-        print(data_mask_dict)
-        print(mask_dict)
-        logger.info('Creating temporary config file for mask...')
-        createConfigMask(config_temp,data_mask_dict)
-
-        '''
     logger.info('Done!')
-
-#def createConfigMask(config_out,data_mask):
-#    f = open(config_out, "w")
-#    f.write('from Xgam import X_CONFIG\n\n')
-#    for k, v in data_mask.items():
-#        if type(v) == str:
-#            f.write(str(k) + ' = \'' + str(v) + '\'\n')
-#        else:
-#            f.write(str(k) + ' = ' + str(v) + '\n')
-#    f.close()
 
 if __name__ == '__main__':
     args = PARSER.parse_args()
