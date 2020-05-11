@@ -285,9 +285,13 @@ def gtltsum(label, sumlt_dict):
 #        return OUTFILE
 
 def gtEbindef(ebinning_array, file_name='ebinning.txt'):
-    """Produces a fits file defining the enrgy binning to fed gtbin.
+    """ Summary line.
+    
+    Produces a fits file defining the enrgy binning to fed gtbin.
 
-           ebinning_array: numpy array
+	Parameters
+	----------
+    ebinning_array: numpy array
                array in which the energy binnin is defined.
     """
     if not os.path.exists(X_OUT):
