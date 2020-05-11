@@ -33,7 +33,7 @@ release = '0.0.1'
 master_doc = 'index'
 
 import sphinx_rtd_theme
-import sphinxcontrib.napoleon
+
 extensions = [
      'sphinx_rtd_theme',
      'sphinx.ext.napoleon',
