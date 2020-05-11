@@ -1,8 +1,7 @@
-utils package
-=============
+utils folder
+============
 
-Submodules
-----------
+Contains useful tools for the Xgam analysis.
 
 utils.ScienceTools\_ module
 ---------------------------
