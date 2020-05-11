@@ -1,4 +1,4 @@
-Installation ans setup
+Installation and setup
 ======================
 
 Required softwares
