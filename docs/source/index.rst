@@ -14,14 +14,15 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   utils
+   installation
    
    license
    help
 
    modules
 
-
+.. automodule:: utils
+		
 Index
 =====
 
