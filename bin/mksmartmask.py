@@ -137,8 +137,8 @@ def mkSmartMask(**kwargs):
                        'outfile' : 'DEFAULT',
                        'chatter': 4,
                        'clobber': 'no'}
-            from Xgam.utils.ScienceTools_ import sumLT
-            out_gtltsum = sumLT(label_lt,lt_dict)
+            from Xgam.utils.ScienceTools_ import gtltsum
+            out_gtltsum = gtltsum(label_lt,lt_dict)
         from Xgam.utils.ScienceTools_ import gtpsf
         label_psf =  IRFS + '_evt' + str(EVTYPE)
         psf_dict = {'expcube' : 'DEFAULT',
