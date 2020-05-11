@@ -35,6 +35,7 @@ master_doc = 'index'
 import sphinx_rtd_theme
 extensions = [
      "sphinx_rtd_theme",
+     "sphinxcontrib.napoleon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

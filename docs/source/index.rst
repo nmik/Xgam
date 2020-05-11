@@ -14,9 +14,12 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   utils
+   
    license
    help
 
+   modules
 
 
 Index
