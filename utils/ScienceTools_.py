@@ -219,7 +219,7 @@ def gtpsf(label, gtpsf_dict):
     logger.info('gtsumlt --> CPU time spent: %.2f'%time.clock())
     return OUTFILE
 
-def sumLT(label, sumlt_dict):
+def gtltsum(label, sumlt_dict):
     """gtltsum from Science Tools
 
        sumlt_dict: python dict
@@ -233,7 +233,6 @@ def sumLT(label, sumlt_dict):
     OUTFILE = os.path.join(OUTPATH, LABEL + '_ltsum.fits')
     if os.path.exists(OUTFILE):
         logger.info('ATT: Already created %s'%OUTFILE)
-        return OUTFILE
     else:
         for key in sumlt_dict:
             if key == 'outfile':
@@ -246,7 +245,8 @@ def sumLT(label, sumlt_dict):
         my_apps.addCubes.run()
         logger.info('Created %s'%OUTFILE)
         logger.info('gtsumlt --> CPU time spent: %.2f'%time.clock())
-        return OUTFILE
+
+    return OUTFILE
 
 #def gtpsf(label, psf_dict):
 #    """gtpsf from Science Tools
