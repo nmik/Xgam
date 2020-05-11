@@ -42,6 +42,7 @@ def get_pl_vs_th(l_, costh_):
     -------
     array
          Pl values correspoding to a given _costh array
+         
     """
     pl_th_ = sp.eval_legendre(l_, costh_)
     
@@ -63,7 +64,8 @@ def build_wpix(nside, l_max=1500):
     Returns
     -------
     spline
-            spline of the pixel window function      
+            spline of the pixel window function  
+                
     """
     wpix = hp.sphtfunc.pixwin(nside)[:l_max]
     fmt = dict(xname='$l$', xunits='', yname='W_{pixel}', yunits='')
@@ -90,6 +92,7 @@ def build_wbeam(psf, l_, out_file):
     ------- 
     spline
         spline of the beam window function   
+        
     """
     out_txt = open(os.path.join(X_OUT, out_file), 'w')
     en_ = psf.x
@@ -138,6 +141,7 @@ def wbeam_parse(wb_file, l_max=1500):
     -------
     array, array, tensor
         In order: array of the energies, array of the multipoles, tensor of the 2D Wbeam(l, E)
+        
     """
     f = open(wb_file, 'r')
     e_ = []
@@ -167,6 +171,7 @@ def get_2D_wbeam(wb_file, show=False):
 	-------
 	spline
     	2D spline of the beam window function  
+    	
     """
     en_, l_, _z_ = wbeam_parse(wb_file)
     fmt = dict(xname='$l$', xunits='', yname='Energy',
@@ -209,6 +214,7 @@ def get_powerlaw_spline(index=2.3):
     -------
     spline
     	spline of the energy spectrum (power law with index = -gamma)
+    	
     """
     EMIN = 2
     EMAX = 6
@@ -241,6 +247,7 @@ def get_1D_wbeam(wb_file, spectrum_spline, e_min, e_max):
 	-------
 	spline
         spline Wbeam(l) resulting from Wbeam(E, l) integrated between Emin and Emax
+        
     """
     en_, l_, _z_ = wbeam_parse(wb_file)
     # spectrum_spline = xInterpolatedUnivariateSplineLinear(_ebin, 
@@ -264,6 +271,7 @@ def get_1D_wbeam(wb_file, spectrum_spline, e_min, e_max):
     
 def main():
     """Test module
+    
     """
     
     CREATE = False
