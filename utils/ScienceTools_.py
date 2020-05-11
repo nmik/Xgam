@@ -201,7 +201,7 @@ def gtpsf(label, gtpsf_dict):
         outfile = gtpsf_dict['outfile']
     if  gtpsf_dict['expcube'] == 'DEFAULT':
         expcube = INFILE
-    else:    
+    else:
         expcube = gtpsf_dict['expcube']
     irfs = gtpsf_dict['irfs']
     evtype = gtpsf_dict['evtype']
@@ -318,8 +318,8 @@ def mergeft1(path_to_files, out_file_name, N1week, Nnweek):
     """
     if N1week < 9:
         abort('Invalid number of weeks: the minimun must be > or = to 9')
-    if Nnweek > 561:
-        abort('Invalid number of weeks: the maximum must be < or = to 561')
+    if Nnweek > 1000:
+        abort('Invalid number of weeks: the maximum must be < or = to 1000')
     outtxtfile = os.path.join(path_to_files, out_file_name)
     if not os.path.exists(outtxtfile):
         out_file = open(outtxtfile, 'w')
@@ -331,7 +331,7 @@ def mergeft1(path_to_files, out_file_name, N1week, Nnweek):
                 out_file.write("%s/lat_photon_weekly_w0%i_p305_v001.fits \n" \
                                    %(path_to_files,i))
             if i > 99:
-                if i == 512:
+                if i == 1000:
                     pass
                 else:
                     out_file.write("%s/lat_photon_weekly_w%i_p305_v001.fits \n" \
@@ -354,8 +354,8 @@ def mergeft2(path_to_files, out_file_name, N1week, Nnweek):
     """
     if N1week < 9:
         abort('Invalid number of weeks: the minimun must be > or = to 9')
-    if Nnweek > 561:
-        abort('Invalid number of weeks: the maximum must be < or = to 561')
+    if Nnweek > 1000:
+        abort('Invalid number of weeks: the maximum must be < or = to 1000')
     outtxtfile = os.path.join(path_to_files, out_file_name)
     if not os.path.exists(outtxtfile):
         out_file = open(outtxtfile, 'w')
