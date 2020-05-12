@@ -175,7 +175,7 @@ def poisson_likelihood(norm_guess, const_guess, fore_map, data_map, exp=None, sr
 def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
                            c_guess=0.1,exp=None, smooth=False, show=False):
     """
-    Performs the poisonian fit, recursively computing the log likelihood
+    Performs the poissonian fit, recursively computing the log likelihood
     (using poisson_likelihood) for a grid of values of fit parameters around
     the guess. Returns the values of parameters which minimize the log
     likelihood, togather to the 1-sigma error
@@ -341,7 +341,8 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
 
 
 def main():
-    """Test session
+    """Test smodule.
+    
     """
     logger.info('No test module is available at the moment... bye bye!')
     return 0
