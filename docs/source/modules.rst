@@ -7,7 +7,7 @@ mkmask
 ------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    mkmask
 
@@ -15,7 +15,7 @@ mkdatafluxmaps
 --------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    mkdatafluxmaps
 
@@ -28,7 +28,7 @@ Contains useful tools for the Xgam analysis.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    ScienceTools_
    
