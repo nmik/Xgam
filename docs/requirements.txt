@@ -1,3 +1,9 @@
 
 utils
-
+utils/ScienceTools_
+utils/foregroundfit_
+utils/logging_
+utils/mkmask_
+utils/parsing_
+utils/spline_
+utils/wbeamfunc_
