@@ -10,15 +10,6 @@
 #                                                                              #
 #------------------------------------------------------------------------------#
 
-"""This app is amed to prepare the data sample to the Anisotropy analysis.
-   Several steps are computed:
-	1) Sum in time: the data selection has been done in 1-year-wide time
-       ------------ bins, so now it is possible to merge those bins to get
-                    the total counts and exposures. Counts and exposure maps
-                    in each micro energy bins are saved in output/output_counts/.
-                    Those maps are automatically retrieved if already present in
-                    the folder and overwrite keyword is False.
-"""
 
 import os
 import sys
@@ -70,8 +61,10 @@ else:
 		f.close()
 
 def mkRestyle(**kwargs):
+	""" Prepare the data sample to the Anisotropy analysis
+	    
 	"""
-	"""
+	
 	logger.info('Starting the restyling...')
 	get_var_from_file(kwargs['config'])
 	fore_files = data.FORE_FILES_LIST
