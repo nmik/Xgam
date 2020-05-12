@@ -70,12 +70,12 @@ def CMB_lens_map_creator(**kwargs):
     logger.info('Created %s'%out_name)
 
     if kwargs['show'] ==  True:
-        import matplotlib as mpl
-        mpl.use('Agg')
-    	import matplotlib.pyplot as plt
-    	mm = hp.ud_grade(conv_map, nside_out=64)
+    
+        import matplotlib.pyplot as plt
+        mm = hp.ud_grade(conv_map, nside_out=64)
         hp.mollview(mm)
-    	plt.show()
+        plt.show()
+    
     CMB_file.close()
 
 if __name__ == '__main__':
