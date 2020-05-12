@@ -15,12 +15,10 @@ Contents:
    :maxdepth: 2
 
    installation   
+   modules
    license
    help
 
-   modules
-
-.. automodule:: utils
 		
 Index
 =====
