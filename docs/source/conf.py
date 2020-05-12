@@ -35,8 +35,10 @@ master_doc = 'index'
 import sphinx_rtd_theme
 
 extensions = [
-     'sphinx_rtd_theme',
-     'sphinx.ext.napoleon',
+    'sphinxarg.ext',
+    'sphinx_rtd_theme',
+    'sphinx.ext.napoleon',
+    'recommonmark'
 ]
 
 napoleon_google_docstring = False
