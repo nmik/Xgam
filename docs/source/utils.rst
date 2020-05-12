@@ -3,14 +3,6 @@ utils folder
 
 Contains useful tools for the Xgam analysis.
 
-utils.ScienceTools\_ module
----------------------------
-
-.. automodule:: utils.ScienceTools_
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 utils.foregroundfit\_ module
 ----------------------------
 
@@ -55,14 +47,6 @@ utils.spline\_ module
 ---------------------
 
 .. automodule:: utils.spline_
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-utils.wbeamfunc\_ module
-------------------------
-
-.. automodule:: utils.wbeamfunc_
    :members:
    :undoc-members:
    :show-inheritance:
