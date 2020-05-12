@@ -26,17 +26,26 @@ from Xgam.utils.logging_ import logger, startmsg
 FORE_EN = re.compile('\_\d+\.')
 
 def get_fore_integral_flux_map(fore_files_list, e_min, e_max):
-    """Returns the foreground map integrated between e_min and e_max
-       A powerlaw is assumed fore the foreground energy spectrum, hence
-       the interpolation between 2 given maps at given energies (given
-       by the model) is done in logarithmic scales.
+    """
+    
+    A powerlaw is assumed for the foreground energy spectrum, hence
+    the interpolation between 2 given maps at given energies (given
+    by the model) is done in logarithmic scales.
 
-       fore_files_list: list of str
+    Parameters
+    ----------
+    fore_files_list: list of str
            Ordered list of the foreground files (one for each energy)
-       e_min: float
+    e_min: float
            the min of the energy bin
-       e_max: float
+    e_max: float
            the max of the energy bin
+           
+    Returns
+    -------
+    array
+        foreground map integrated between e_min and e_max
+        
     """
     fore_en = []
     for ff in fore_files_list:
@@ -79,14 +88,23 @@ def get_fore_integral_flux_map(fore_files_list, e_min, e_max):
         return fore_integ_map
 
 def find_outer_energies(en_val, en_arr):
-    """Returns the first element on the right and the first on the left
-       of a given value (en_val), among all values in an ordered array
-       (en_arr).
+    """
+    Gives the first element on the right and the first on the left
+    of a given E value (en_val), among all values in an ordered array (en_arr).
+    These values are used to integrate the foreground model in the considered energy bin.
 
-       en_val : float
+    Parameters
+    ----------
+    en_val : float
            mean energy
-       en_arr : float
+    en_arr : float
            array of the energies at which the foreground model is given.
+           
+    Returns
+    -------
+    float, float
+        first element on the right and the first on the left
+    
     """
     en_sx_arr = en_arr[en_arr < en_val]
     en_dx_arr = en_arr[en_arr > en_val]
@@ -107,28 +125,37 @@ def find_outer_energies(en_val, en_arr):
 
 @jit
 def poisson_likelihood(norm_guess, const_guess, fore_map, data_map, exp=None, sr=None):
-    """Compute the log-likelihood as decribed here:
-       http://iopscience.iop.org/article/10.1088/0004-637X/750/1/3/pdf
-       where the model to fit to data is given by norm*fore_map+const.
+    """
+    Compute the log-likelihood as decribed here:
+    http://iopscience.iop.org/article/10.1088/0004-637X/750/1/3/pdf
+    where the model to fit to data is given by norm*fore_map+const.
 
-       norm_guess : float
+    Parameters
+    ----------
+    norm_guess : float
           initial guess for normalization parameter
-       const_guess : float
+    const_guess : float
           initial guess for constant parameter
-       fore_map : numpy array
+    fore_map : numpy array
           helapix map of foreground model
-       data_map : numpy array
+    data_map : numpy array
           helapix map of data. It could be either a count map or a flux map.
           If a counts map is given, an exposure map should be given too. See
           next parameter.
-       exp :  numpy array or None
+    exp :  numpy array or None
           helapix map of the exposure. Should be given if the data map is in
           counts (beacause foreground map is in flux units by default and it
           needs to be turned to counts to be fitted). While, If data map is
           in flux units, do not declare this parameter, which is None by
           default.
-       sr : float or None
+    sr : float or None
           pixel area -> 4*pi/Npix
+          
+    Returns
+    -------
+    float
+        likelihood value.
+        
     """
     a = norm_guess
     b = const_guess
@@ -147,31 +174,40 @@ def poisson_likelihood(norm_guess, const_guess, fore_map, data_map, exp=None, sr
 
 def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
                            c_guess=0.1,exp=None, smooth=False, show=False):
-    """Performs the poisonian fit, recursively computing the log likelihood
-       (using poisson_likelihood) for a grid of values of fit parameters around
-       the guess. Returns the values of parameters which minimize the log
-       likelihood, togather to the 1-sigma error
+    """
+    Performs the poisonian fit, recursively computing the log likelihood
+    (using poisson_likelihood) for a grid of values of fit parameters around
+    the guess. Returns the values of parameters which minimize the log
+    likelihood, togather to the 1-sigma error
 
-       n_guess : float
+    Parameters
+    ----------
+    n_guess : float
           initial guess for normalization parameter
-       c_guess : float
+    c_guess : float
           initial guess for constant parameter
-       fore_map : numpy array
+    fore_map : numpy array
           helapix map of foreground model
-       data_map : numpy array
+    data_map : numpy array
           helapix map of data. It could be either a count map or a flux map.
           If a counts map is given, an exposure map should be given too. See
           next parameter.
-       exp :  numpy array or None
+    exp :  numpy array or None
           helapix map of the exposure. Should be given if the data map is in
           counts (beacause foreground map is in flux units by default and it
           needs to be turned to counts to be fitted). While, If data map is
           in flux units, do not declare this parameter, which is None by
           default.
-       smooth : bool
+    smooth : bool
           not implemented yet...
-       show : bool
+    show : bool
           if true it shows some usefull plot to check if the fit is functioning
+          
+    Returns
+    -------
+    float, float, float, float, float, float
+        In order: best fit N, best fit C, N's right error, N's left error, 
+        C's right error, C's left error
     """
     #show=True
     logger.info('Performing poissonian fit...')
