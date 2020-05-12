@@ -84,16 +84,18 @@ def foreground_map_convert(**kwargs):
         	hp_frmap_out = hp.pixelfunc.ud_grade(hp_frmap, nside_out,  pess=True)
         	hp.write_map(out_path, hp_frmap_out, coord='G')
         	logger.info('Created map %s'%out_path)
-    if kwargs['show'] ==  True:
-        import matplotlib as mpl
-        mpl.use('Agg')
-    	import matplotlib.pyplot as plt
-    	plt.figure()
-    	plt.plot(energy, fr_e, 'o--')
-    	plt.xlabel('Energy [MeV]')
-    	plt.xscale('log')
-    	plt.ylabel('Flux [cm$^{-2}$s$^{-1}$sr$^{-1}$]')
-    	plt.show()
+    
+    if kwargs['show']:
+    
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.plot(energy, fr_e, 'o--')
+        plt.xlabel('Energy [MeV]')
+        plt.xscale('log')
+        plt.ylabel('Flux [cm$^{-2}$s$^{-1}$sr$^{-1}$]')
+        
+        plt.show()
+    
     frmaps.close()
 
 if __name__ == '__main__':
