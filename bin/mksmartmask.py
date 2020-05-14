@@ -46,7 +46,7 @@ PARSER.add_argument('--irfs', type=str, required=False,
 PARSER.add_argument('--evtype', type=int, required=False,
                     help='event type')
 PARSER.add_argument('--psffile', type=str, required=False,
-                    help='PSF input file', default='default_psf.fits')
+                    help='PSF input file', default='default')
 PARSER.add_argument('--ltlist', type=str, required=False,
                     help='livetimes list file', default='')
 PARSER.add_argument('--srcmask', type=ast.literal_eval, choices=[True, False],
@@ -108,7 +108,9 @@ def mkSmartMask(**kwargs):
     if os.path.exists(PSF_FILE):
         logger.info('OK')
     else:
-        logger.info('ATT: File not found: %s'%PSF_FILE)
+        if PSF_FILE is not 'default':
+            logger.info('ATT: File not found: %s'%PSF_FILE)
+            logger.info('Creating PSF file...')
         try:
             IRFS = kwargs['irfs']
         except:
@@ -119,7 +121,6 @@ def mkSmartMask(**kwargs):
         except:
             logger.info('ERROR: provide event type!')
             sys.exit()
-        logger.info('Creating PSF file...')
         try:
             LT_FILE = data.LT_FILE
         except:
@@ -167,6 +168,8 @@ def mkSmartMask(**kwargs):
     npix = hp.nside2npix(nside)
     src_cat = os.path.join(FT_DATA_FOLDER, 'fits/' + kwargs['srccat'])
     src_ext_cat = os.path.join(FT_DATA_FOLDER, 'fits/' + kwargs['srcextcat'])
+    out_name_list = os.path.join(X_OUT, 'fits/Mask_'+out_label+'.txt')
+    out_list = []
 
     for i, (minb, maxb) in enumerate(macro_bins):
         logger.info('Considering bins from %i to %i...' %(minb, maxb))
@@ -176,6 +179,7 @@ def mkSmartMask(**kwargs):
         logger.info('Energies %.1f - %.1f [MeV]' %(E_MIN, E_MAX))
 
         out_name = os.path.join(X_OUT, 'fits/Mask_'+out_label+'_%.1f_MeV.fits'%(E_MIN))
+        out_list.append(out_name)
         if os.path.exists(out_name) and not kwargs['overwrite']:
             logger.info('ATT: %s already exists! \n'%out_name)
         else:
@@ -199,6 +203,8 @@ def mkSmartMask(**kwargs):
                 hp.mollview(mask, cmap='bone')
                 plt.show()
 
+    logger.info('Writing list of output files: %s'%out_name_list)
+    np.savetxt(out_name_list, out_list, fmt='%s')
     logger.info('Done!')
 
 if __name__ == '__main__':

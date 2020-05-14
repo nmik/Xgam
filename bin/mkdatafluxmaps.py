@@ -62,9 +62,9 @@ else:
 
 def mkRestyle(**kwargs):
 	""" Prepare the data sample to the Anisotropy analysis
-	    
+
 	"""
-	
+
 	logger.info('Starting the restyling...')
 	get_var_from_file(kwargs['config'])
 	fore_files = data.FORE_FILES_LIST
@@ -78,6 +78,12 @@ def mkRestyle(**kwargs):
 	micro_bin_file = data.MICRO_BINS_FILE
 	igrb_file = data.IGRB_FILE
 	bincalc = data.BINCALC
+	if fore_files[-4:] == '.txt' or fore_files[-4:] == '.txt':
+	    fore_files = open(fore_files,'r')
+        fore_files = fore_files.read().splitlines()
+	if mask_file[-4:] == '.txt' or mask_file[-4:] == '.txt':
+	    mask_file = open(mask_file,'r')
+	    mask_file = mask_file.read().splitlines()
 
 	overwrite = kwargs['overwrite']
 	outfile_name = os.path.join(X_OUT, '%s_%s_%s_datafluxmaps.txt' \
