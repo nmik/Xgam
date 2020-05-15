@@ -119,7 +119,7 @@ def mkRestyle(**kwargs):
 		E_MEAN_.append(E_MEAN)
 		logger.info('Emin, Emax, Emean : %.2f, %.2f, %.2f [MeV]'%(E_MIN, E_MAX, E_MEAN))
 		logger.info('Summing in time counts and exposures ...')
-		micro_bins = np.arange(minb, maxb)
+		micro_bins = np.arange(minb, maxb+1)
 		if type(mask_file) == list:
 			mask_file = mask_file[i]
 		else:
@@ -141,7 +141,7 @@ def mkRestyle(**kwargs):
 			micro_exp_name = os.path.join(X_OUT, 'output_count/%s_exposure_%i.fits'
 										  %(out_label, mb))
 			if os.path.exists(micro_cnt_name) and os.path.exists(micro_exp_name):
-				logger.info('Counts and exposure maps ready! Retriving them...')
+				logger.info('Counts and exposure maps ready! Retrieving them...')
 				cnt_map = hp.read_map(micro_cnt_name)
 				exp_map = hp.read_map(micro_exp_name)
 				time_sum_cnt_.append(cnt_map)
@@ -265,7 +265,7 @@ def mkRestyle(**kwargs):
 
 		time_ene_sum_flux_ = np.sum(time_sum_flux_, axis=0)
 		time_ene_sum_fluxerr_ = np.sqrt(np.sum(time_sum_fluxerr_**2, axis=0))
-
+		
 		time_ene_sum_flux_masked = hp.ma(time_ene_sum_flux_)
 		time_ene_sum_flux_masked.mask = np.logical_not(mask)
 
