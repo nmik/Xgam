@@ -168,7 +168,7 @@ def mkSmartMask(**kwargs):
     npix = hp.nside2npix(nside)
     src_cat = os.path.join(FT_DATA_FOLDER, 'fits/' + kwargs['srccat'])
     src_ext_cat = os.path.join(FT_DATA_FOLDER, 'fits/' + kwargs['srcextcat'])
-    out_name_list = os.path.join(X_OUT, 'fits/Mask_'+out_label+'.txt')
+    out_name_list = os.path.join(X_OUT, 'fits/Mask_'+out_label+'_list.txt')
     out_list = []
 
     for i, (minb, maxb) in enumerate(macro_bins):

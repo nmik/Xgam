@@ -87,7 +87,7 @@ def foreground_map_convert(**kwargs):
         	hp.write_map(out_path, hp_frmap_out, coord='G')
         	logger.info('Created map %s'%out_path)
         out_list.append(out_path)
-    out_name_list = os.path.basename(input_file).replace('.fits','_hp%i_list.txt'%nside)
+    out_name_list = os.path.basename(input_file).replace('.fits','_hp%i_list.txt'%nside_out)
     out_name_list = os.path.join(X_OUT, 'fits', out_name_list)
     logger.info('Writing list of output files: %s'%out_name_list)
     np.savetxt(out_name_list, out_list, fmt='%s')
