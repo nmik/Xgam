@@ -78,11 +78,11 @@ def mkRestyle(**kwargs):
     micro_bin_file = data.MICRO_BINS_FILE
     igrb_file = data.IGRB_FILE
     bincalc = data.BINCALC
-	
-    if type(fore_files_) == str and fore_files_.endswith('.txt'):
+
+    if type(fore_files_) == str and fore_files_.endswith(('.txt','.dat')):
         fore_files_ = open(fore_files_,'r')
         fore_files_ = fore_files_.read().splitlines()
-    if type(mask_files_) == str and mask_files_.endswith('.txt'):
+    if type(mask_files_) == str and mask_files_.endswith(('.txt','.dat')):
         mask_files_ = open(mask_files_,'r')
         mask_files_ = mask_files_.read().splitlines()
 
@@ -92,7 +92,7 @@ def mkRestyle(**kwargs):
 									%(out_label, mask_label, binning_label, fore_label))
     else:
         outfile_name = os.path.join(X_OUT, '%s_%s_%s_noforesub_datafluxmaps.txt' \
-									%(out_label, mask_label, binning_label))   						
+									%(out_label, mask_label, binning_label))
     if os.path.exists(outfile_name):
         logger.info('ATT: Output file already exists!')
         logger.info(outfile_name)
@@ -200,7 +200,7 @@ def mkRestyle(**kwargs):
         if kwargs['foresub'] == True:
             logger.info('Foreground subtraction activated...')
             from Xgam.utils.foregroundfit_ import fit_foreground_poisson
-            from Xgam.utils.foregroundfit_ import get_fore_integral_flux_map
+            from Xgam.utils.foregroundfit_ import get_fore_integral_flux_map_
 
             micro_fore_map_, micro_CN_ = [], []
             micro_fore_N_, micro_fore_N_errsx_, micro_fore_N_errdx_ = [], [], []
@@ -271,7 +271,7 @@ def mkRestyle(**kwargs):
 
         time_ene_sum_flux_ = np.sum(time_sum_flux_, axis=0)
         time_ene_sum_fluxerr_ = np.sqrt(np.sum(time_sum_fluxerr_**2, axis=0))
-		
+
         time_ene_sum_flux_masked = hp.ma(time_ene_sum_flux_)
         time_ene_sum_flux_masked.mask = np.logical_not(mask)
 
