@@ -47,8 +47,8 @@ PARSER.add_argument('--evtype', type=int, required=False,
                     help='event type')
 PARSER.add_argument('--psffile', type=str, required=False,
                     help='PSF input file', default='default')
-PARSER.add_argument('--ltlist', type=str, required=False,
-                    help='livetimes list file', default='')
+PARSER.add_argument('--ltfile', type=str, required=False,
+                    help='livetimes file or list of files', default='')
 PARSER.add_argument('--srcmask', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='sources mask activated')
@@ -129,20 +129,25 @@ def mkSmartMask(**kwargs):
             logger.info('Livetime file found.')
         else:
             try:
-                LT_LIST = kwargs['ltlist']
+                LT_FILE = kwargs['ltfile']
             except:
-                logger.info('ERROR: provide livetimes list!')
+                logger.info('ERROR: provide livetime file or list!')
                 sys.exit()
-            label_lt = IRFS + '_evt' + str(EVTYPE)
-            lt_dict = {'infile1' : LT_LIST,
-                       'outfile' : 'DEFAULT',
-                       'chatter': 4,
-                       'clobber': 'no'}
-            from Xgam.utils.ScienceTools_ import gtltsum
-            out_gtltsum = gtltsum(label_lt,lt_dict)
+            if LT_FILE.lower().endswith(('.txt', '.dat')):
+                lt_dict = {'infile1' : LT_FILE,
+                           'outfile' : 'DEFAULT',
+                           'chatter': 4,
+                           'clobber': 'no'}
+                from Xgam.utils.ScienceTools_ import gtltsum
+                label_lt = IRFS + '_evt' + str(EVTYPE)
+                out_gtltsum = gtltsum(label_lt,lt_dict)
+                expcube = 'DEFAULT'
+            else:
+                expcube = LT_FILE
+            
         from Xgam.utils.ScienceTools_ import gtpsf
         label_psf =  IRFS + '_evt' + str(EVTYPE)
-        psf_dict = {'expcube' : 'DEFAULT',
+        psf_dict = {'expcube' : expcube,
                     'outfile' : 'DEFAULT',
                     'irfs' : IRFS,
                     'evtype' : EVTYPE,
