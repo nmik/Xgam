@@ -67,28 +67,32 @@ def mkRestyle(**kwargs):
 
     logger.info('Starting the restyling...')
     get_var_from_file(kwargs['config'])
-    fore_files = data.FORE_FILES_LIST
+    fore_files_ = data.FORE_FILES_LIST
     macro_bins = data.MACRO_BINS
     out_label = data.OUT_LABEL
     mask_label = data.MASK_LABEL
     fore_label = data.FORE_LABEL
     binning_label = data.BINNING_LABEL
     in_labels_list = data.IN_LABELS_LIST
-    mask_file = data.MASK_FILE
+    mask_files_ = data.MASK_FILE
     micro_bin_file = data.MICRO_BINS_FILE
     igrb_file = data.IGRB_FILE
     bincalc = data.BINCALC
 	
-    if fore_files[-4:] == '.txt' or fore_files[-4:] == '.txt':
-        fore_files = open(fore_files,'r')
-        fore_files = fore_files.read().splitlines()
-    if mask_file[-4:] == '.txt' or mask_file[-4:] == '.txt':
-        mask_file = open(mask_file,'r')
-        mask_file = mask_file.read().splitlines()
+    if type(fore_files_) == str and fore_files_.endswith('.txt'):
+        fore_files_ = open(fore_files_,'r')
+        fore_files_ = fore_files_.read().splitlines()
+    if type(mask_files_) == str and mask_files_.endswith('.txt'):
+        mask_files_ = open(mask_files_,'r')
+        mask_files_ = mask_files_.read().splitlines()
 
     overwrite = kwargs['overwrite']
-    outfile_name = os.path.join(X_OUT, '%s_%s_%s_datafluxmaps.txt' \
-									%(out_label, mask_label, binning_label))
+    if kwargs['foresub'] == True:
+        outfile_name = os.path.join(X_OUT, '%s_%s_%s_%s_datafluxmaps.txt' \
+									%(out_label, mask_label, binning_label, fore_label))
+    else:
+        outfile_name = os.path.join(X_OUT, '%s_%s_%s_noforesub_datafluxmaps.txt' \
+									%(out_label, mask_label, binning_label))   						
     if os.path.exists(outfile_name):
         logger.info('ATT: Output file already exists!')
         logger.info(outfile_name)
@@ -105,7 +109,7 @@ def mkRestyle(**kwargs):
         fore_C_, fore_C_errsx_, fore_C_errdx_ = [], [], []
     else:
         outfile.write(
-               '# \t E_MIN \t E_MAX \t E_MEAN \t F_MEAN \t FERR_MEAN \t CN \t FSKY')
+               '# \t E_MIN \t E_MAX \t E_MEAN \t F_MEAN \t FERR_MEAN \t CN \t FSKY\n')
 
     CN_, FSKY_ = [], []
     E_MIN_, E_MAX_, E_MEAN_ = [], [], []
@@ -121,10 +125,11 @@ def mkRestyle(**kwargs):
         logger.info('Emin, Emax, Emean : %.2f, %.2f, %.2f [MeV]'%(E_MIN, E_MAX, E_MEAN))
         logger.info('Summing in time counts and exposures ...')
         micro_bins = np.arange(minb, maxb+1)
-        if type(mask_file) == list:
-            mask_file = mask_file[i]
+        if type(mask_files_) == list:
+            mask_file = mask_files_[i]
         else:
             pass
+        logger.info('Using mask file: %s'%mask_file)
         mask = hp.read_map(mask_file)
         _unmasked = np.where(mask > 0)[0]
         fsky = float(len(_unmasked)*1./len(mask))
@@ -163,7 +168,7 @@ def mkRestyle(**kwargs):
                                 emap_mean = hp.read_map(line.replace('\n', ''), field=mb)
                             elif bincalc == 'EDGE':
                                 emap = hp.read_map(line.replace('\n', ''), field=range(mb, mb+2))
-                                emap_mean = np.sqrt(emap[:-1]*emap[1:])
+                                emap_mean = np.sqrt(emap[0]*emap[1])
                             else:
                                 logger.info('ATT: Invalid bincalc!')
                                 sys.exit()
@@ -202,7 +207,7 @@ def mkRestyle(**kwargs):
             micro_fore_C_, micro_fore_C_errsx_, micro_fore_C_errdx_ = [], [], []
             logger.info('perfom the fit in each micro enrgy bin...')
             for b, mb in enumerate(micro_bins):
-                fore_model_map = get_fore_integral_flux_map(fore_files, emin[b], emax[b])
+                fore_model_map = get_fore_integral_flux_map(fore_files_, emin[b], emax[b])
                 micro_fore_map_.append(fore_model_map)
                 igrb_data = np.genfromtxt(igrb_file)
                 igrb_interp = interp1d(igrb_data[:,0],igrb_data[:,1])
@@ -302,6 +307,7 @@ def mkRestyle(**kwargs):
 						  CN_[i], FSKY_[i]))
 
     outfile.close()
+    logger.info('Created %s'%outfile_name)
     logger.info('Done!')
 
 
