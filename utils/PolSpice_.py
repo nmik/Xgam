@@ -17,6 +17,7 @@
 import os
 import numpy as np
 import scipy as sp
+from scipy.special import lpmv as leg_m_n
 import healpy as hp
 import pickle as pic
 import astropy.io.fits as pf
@@ -25,46 +26,99 @@ from matplotlib import pyplot as plt
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger
 
-def new_binning():
+def new_binning(xmax,xmin,nbin,bin_type='lin',out_type=int):
     """
     Define the new binning.
-    
+
     Parameters
 	----------
-	
+
 	Returns
 	-------
 	array
 	   the array with the edges of the new binning
     """
-    binning_ = np.array([]])
+    if bin_type == 'lin':
+        binning_ = np.linspace(xmin, xmax ,num=nbin ,dtype=out_type)
+    elif bin_type == 'log':
+        binning_ = np.logspace(np.log10(xmin), np.log10(xmax), num=nbin, dtype=out_type)
+    else:
+        logger.info('ERROR: Invalid binning type. Choose lin or log.')
+        sys.exit()
+
     return binning_
-    
-def pol_ccf_parse(pol_ccf_out_file, pol_cov_out_file, rebin=None):
+
+def pol_ccf_parse(pol_ccf_out_file, pol_cov_out_file, rebin=None, pol='circular'):
     """
     Parser for the cross-correlation function.
-    
+
     Parameters
 	----------
-	
+
 	Returns
 	-------
 	array, array, array, tensor
     """
+    hdu = pf.open(pol_cov_out_file)
+    _cov = hdu[0].data[0]
+    _cov = np.array(_cov)
+    f = open(pol_ccf_out_file, 'r')
+
+    th_, ccf_ = [], []
+    for line in f:
+        try:
+            th, ccf = [float(item) for item in line.split()]
+            th_.append(th)
+            ccf_.append(ccf)
+        except:
+            pass
+    th_ = np.array(th_)
+    ccf_ = np.array(ccf_)
+
+    #if rebin is not None:
+
+    #Tranforming covariance
+    #NOTE: think about Wl and Wpix correction!
+    ccf_cov_ = np.zeros(np.shape(_cov))
+    Pl_ = []
+    if pol == 'circular':
+        A=(2.*l+1.)/(4.*np.pi)
+        leg_ord = 1
+    elif  pol == 'dipolar':
+        A=(2.*l+1.)/((l*(l+1.))*4.*np.pi)
+        leg_ord = 2
+    else:
+        logging.info('ERROR: Invalid polarization type in covariance tranformation!')
+        sys.exit()
+
+    l_ = np.arange(len(_cov),dtype=int)
+    for th in th_:
+        Pl_.append(leg_m_n(leg_ord, l_, np.cos(np.radians(th))))
+    Pl_ = np.array(Pl_)
+
+    for i,th_1 in enumerate(th_):
+        for j,th_2 in enumerate(th_):
+            if j>=i:
+                ccf_cov_[i,j] = np.sum((A[j]*Pl_[j])*np.transpose((A[i]*Pl_[i])*_cov))
+
+    ccf_cov_ = ccf_cov_ + np.transpose(ccf_cov_)
+    idx_diag = np.diag_indices(len(ccf_cov_))
+    ccf_cov_[idx_diag] = ccf_cov_[idx_diag]/2.0
+
     return th_, ccf_, ccferr_, ccf_cov_
-    
+
 def pol_create_config(pol_dict, config_file_name):
     """
     Creates and returns PolSpice config ascii file.
-    
+
     Parameters
-	----------   
+	----------
     pol_dict : python dict
         a dictionary where all the parameters of a tipical PolSpice config
         ascii file should have.
     config_file_name : str
         name of the confg ascii file that will be created
-          
+
     Returns
     -------
     str
@@ -77,29 +131,29 @@ def pol_create_config(pol_dict, config_file_name):
     for key in pol_dict:
         pol_config_file.write('%s = %s \n'%(key, str(pol_dict[key])))
     logger.info('Created output/output_polspice/%s.txt'%config_file_name)
-    return pol_config 
+    return pol_config
 
 def pol_run(config_file):
     """
     Runs PolSpice.
-    
+
     Parameters
-	----------  
-	config_file : str 
+	----------
+	config_file : str
           configuration txt file
     """
     os.system('spice -optinfile %s' %(config_file))
-    
+
     return 0
 
 def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None):
     """
     Parser of the txt output file of PolSpice, which contains the angular power spectrum (APS).
-    
+
     Parameters
 	----------
     pol_cl_out_file : str
-        ascii output file created by PolSpice 
+        ascii output file created by PolSpice
     pol_cov_out_file : str
         .fits file containing the covariance matrix created by PolSpice
     raw_corr : (float, numpy array)
@@ -108,17 +162,17 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None):
         of the  Wbeam function as a funcion of l integrated in a energy bin.
     rebin : list (or array)
         if not None, it has to be the list defining the edges of the new binning.
-    
+
     Returns
     -------
     array, array, array
-        in order: array of the ells, array of the Cls, array of the Cls errors 
-        (estimated from the covariance matrix). If rebin is not None the arrays are 
-        the rebinned array. 
+        in order: array of the ells, array of the Cls, array of the Cls errors
+        (estimated from the covariance matrix). If rebin is not None the arrays are
+        the rebinned array.
     """
     hdu = pf.open(pol_cov_out_file)
     _cov = hdu[0].data[0]
-    _invcov = np.linalg.inv(_cov)    
+    _invcov = np.linalg.inv(_cov)
     f = open(pol_cl_out_file, 'r')
 
     _l, _cl = [], []
@@ -158,7 +212,7 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None):
 #             logger.info('cl_mean err %.3f'%np.sqrt(_clerr))
 #             _clr.append(_clmean)
 #             _clerrr.append(np.sqrt(_clerr))
-#         _l = np.array(_lr) 
+#         _l = np.array(_lr)
 #         _cl = np.array(_clr)
 #         _clerr = np.array(_clerrr)
 #     else:
@@ -167,7 +221,7 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None):
 
 def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
     """
-    Parser of the fits output file of PolSpice containing the covariance 
+    Parser of the fits output file of PolSpice containing the covariance
     matrix of the angular power spectra (APS).
 
     Parameters
@@ -175,17 +229,17 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
     pol_cov_out_file :
         .fits file containing the covariance matrix created by PolSpice
     wl_array : numpy array (or spline)
-        array (or the spline) of the  Wbeam function as a funcion of l 
+        array (or the spline) of the  Wbeam function as a funcion of l
         integrated in a energy bin.
     rebin : list (or array)
-        if not None, it has to be the list defining the edges of the new binning. 
+        if not None, it has to be the list defining the edges of the new binning.
     show : bool
         if True the plot of the covariance matrix is shown
-          
+
     Returns
     -------
     numpy tensor
-        rebinned covariance matix (shaped as a tensor NxN, where N is the number of bins)    
+        rebinned covariance matix (shaped as a tensor NxN, where N is the number of bins)
     """
     show = False
     hdu = pf.open(pol_cov_out_file)
@@ -198,8 +252,8 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
         _cov = np.array([_cov[i][:len(wl)] for i in range(0,len(wl))])
         _cov = _cov/(wl**2)
         for l in _l:
-            _cov[l] = _cov[l]/(wl[l]**2)   
-# TO BE REWRITTEN -------------------------------------------------- 
+            _cov[l] = _cov[l]/(wl[l]**2)
+# TO BE REWRITTEN --------------------------------------------------
 #     if rebin:
 #         _covr = []
 #         _lr = []
@@ -214,8 +268,8 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
 #         _cov = np.array(_covr)
 #         _l = np.array(_lr)
 #     else:
-#         pass 
-    pic.dump(_cov, 
+#         pass
+    pic.dump(_cov,
              open(pol_cov_out_file.replace('.fits', '.pkl'),'wb'))
     if show==True:
          _cov2ploti = []
@@ -232,7 +286,7 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
          _cov2ploti = np.array(_cov2ploti)
          fig = plt.figure(facecolor='white')
          ax = fig.add_subplot(111)
-         cax = ax.matshow(np.log10(np.abs(_cov)), origin='lower', 
+         cax = ax.matshow(np.log10(np.abs(_cov)), origin='lower',
                           aspect='auto', cmap='Spectral')
          en_tick = list(np.logspace(0, np.log10(1500), 6).astype(int))
          ax.set_yticklabels(['']+en_tick)
@@ -246,10 +300,10 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
     return _cov
 
 def pol_cl_calculation(pol_dict, config_file_name, raw_corr=None, rebin=None, show=False):
-    """ 
+    """
     Creates and runs the PolSpice config file, and returns the arrays of
-    1) the multipoles (rebinned or not); 2) the Cl corresponding to the 
-    multipoles; 3) the errors associated to the Cls; 4) the covariance 
+    1) the multipoles (rebinned or not); 2) the Cl corresponding to the
+    multipoles; 3) the errors associated to the Cls; 4) the covariance
     matrix.
 
     Parameters
@@ -267,13 +321,13 @@ def pol_cl_calculation(pol_dict, config_file_name, raw_corr=None, rebin=None, sh
         if True a multipole rebinni of the APS is done.
     show : bool
         if True the plot of the covariance matrix is shown
-        
+
     Returns
     -------
     array, array, array, tensor
         in order: array of the ells, array of the Cls, array of the error on the Cls
-        errors, tensor of the covariance matrix. If rebin is not None the arrays are 
-        the rebinned array. 
+        errors, tensor of the covariance matrix. If rebin is not None the arrays are
+        the rebinned array.
     """
     corr = raw_corr
     r = rebin
@@ -287,15 +341,15 @@ def pol_cl_calculation(pol_dict, config_file_name, raw_corr=None, rebin=None, sh
         cn, wl = raw_corr[0], raw_corr[1]
     _l, _cl, _clerr= pol_cl_parse(pol_cl_out_file, pol_cov_out_file,
                                   raw_corr=corr,rebin=r)
-    _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, 
+    _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl,
                          rebin=r, show=s)
     return _l, _cl, _clerr, _cov
-    
+
 def main():
     """test module
     """
     print rebinning
-    
+
 
 
 if __name__ == '__main__':
