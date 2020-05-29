@@ -45,5 +45,8 @@ This will show all the possible settings of a given function in bin/ :
 
      python bin/mkAnyFunction.py -h 
 
-Some more details can be found in the Wiki of this project!
-A more detailed documentation will be soon available.
+Some more details can be found in the Wiki of this project:
+
+https://github.com/nmik/Xgam/wiki
+
+(A more detailed documentation will be soon available).
