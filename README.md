@@ -38,4 +38,4 @@ How to run the analysis
 -----------------------
 This will show all the possible settings of a given function in bin/ ::
 
-     python bin/mkAnyFunction.py --h 
+     python bin/mkAnyFunction.py -h 
