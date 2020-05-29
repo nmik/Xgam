@@ -13,7 +13,7 @@ Required softwares
 Setting up the environment
 --------------------------
 
-Set the environment in your .bashrc or .bash_profile ::
+Set the environment in your .bashrc or .bash_profile:
 
     function Xgam_env {
     	echo 'Setting Xgam environment...'
@@ -23,7 +23,7 @@ Set the environment in your .bashrc or .bash_profile ::
     	export P8_DATA=/path/to/data_files
     	echo 'done.'}
 
-Change the directory where the data files are stored in __init__.py (line 35)::
+Change the directory where the data files are stored in __init__.py (line 35):
 
     FT_DATA_FOLDER = '/path/to/data_files'
 
@@ -41,6 +41,9 @@ Docker alternative
 
 How to run the analysis
 -----------------------
-This will show all the possible settings of a given function in bin/ ::
+This will show all the possible settings of a given function in bin/ :
 
      python bin/mkAnyFunction.py -h 
+
+Some more details can be found in the Wiki of this project!
+A more detailed documentation will be soon available.
