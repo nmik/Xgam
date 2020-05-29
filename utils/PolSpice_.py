@@ -162,7 +162,7 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None):
 #         _cl = np.array(_clr)
 #         _clerr = np.array(_clerrr)
 #     else:
-#         _clerr = np.array([np.sqrt(_cov[i][i]) for i in _l])
+#         _clerr = np.array([np.sqrt(_cov[i][i]) for i in _l.astype(int)])
     return np.array(_l), np.array(_cl),  np.array(_clerr)
 
 def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
