@@ -2,24 +2,24 @@ Installation and setup
 ======================
 
 Required softwares
-^^^^^^^^^^^^^^^^^^
+------------------
 
-* Install the Fermitools (https://github.com/fermi-lat/Fermitools-conda )
+* Install the Fermitools (https://github.com/fermi-lat/Fermitools-conda)
 * Install PolSpice
 * Install healpy python package
 
 Setting up the environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
-* Set the environment in your .bashrc or .bash_profile::
+* Set the environment in your .bashrc or .bash_profile ::
 
     function Xgam_env {
-        echo 'Setting Xgam environment...'
-        conda activate fermi
-        export PYTHONPATH=:/path/to/this/package/:${PYTHONPATH}
-        export PATH=/path/to/this/package/Xgam/bin:${PATH}
-        export P8_DATA=/path/to/data_files
-        echo 'done.'}
+    echo 'Setting Xgam environment...'
+    conda activate fermi
+    export PYTHONPATH=:/path/to/this/package/:${PYTHONPATH}
+    export PATH=/path/to/this/package/Xgam/bin:${PATH}
+    export P8_DATA=/path/to/data_files
+    echo 'done.'}
 
 * Change the directory where the data files are stored in __init__.py (line 35)::
 
