@@ -34,6 +34,11 @@ In the data directory should there be the following folders:
    * output/      -> where ST outputs will be stored
 
 
+Docker alternative
+------------------
+(Instructions about how to use the docker will be available soon.)
+
+
 How to run the analysis
 -----------------------
 This will show all the possible settings of a given function in bin/ ::
