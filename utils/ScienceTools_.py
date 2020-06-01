@@ -238,10 +238,10 @@ def gtpsf(label, gtpsf_dict):
     """
     logger.info('Running gtpsf...')
     LABEL = label
-    OUTPATH = os.path.join(FT_DATA_FOLDER, 'fits')
+    OUTPATH = os.path.join(FT_DATA_FOLDER, 'output/output_gtpsf')
     if not os.path.exists(OUTPATH):
         os.makedirs(OUTPATH)
-    INFILE = os.path.join(OUTPATH, LABEL + '_ltsum.fits')
+    INFILE = os.path.join(FT_DATA_FOLDER, 'output/output_gtltcube/%s_outofltcube.fits'%LABEL)
     OUTFILE = os.path.join(OUTPATH, LABEL + '_psf.fits')
     if os.path.exists(OUTFILE):
         logger.info('ATT: Already created %s'%OUTFILE)
@@ -288,7 +288,7 @@ def gtltsum(label, sumlt_dict):
     """
     logger.info('Running gtltsum...')
     LABEL = label
-    OUTPATH = os.path.join(FT_DATA_FOLDER, 'fits')
+    OUTPATH = os.path.join(FT_DATA_FOLDER, 'output/output_gtltsum')
     if not os.path.exists(OUTPATH):
         os.makedirs(OUTPATH)
     OUTFILE = os.path.join(OUTPATH, LABEL + '_ltsum.fits')
