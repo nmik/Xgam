@@ -119,7 +119,7 @@ def build_wbeam(psf, l_, out_file):
             replace(', ', ' ')
         out_txt.write('%i\t%s\n'%(l, wb))
     out_txt.close()
-    return wbeam
+    return _wb_
     
 
 def wbeam_parse(wb_file, l_max=1500):
@@ -276,14 +276,14 @@ def main():
         
         psf_f = os.path.join(X_OUT, 'fits/psf_SV_t32.fits')
         psf = get_psf_th_en_bivariatespline(psf_f)
-        out_wbeam_txt = 'Wbeam_P8R3_SOURCEVETO_V2_32.txt'
+        out_wbeam_txt = 'P8R3_SOURCEVETO_V2_evt32_wbeam.txt'
         l_ = np.arange(1500)
         wb = build_wbeam(psf, l_, out_wbeam_txt)
     
     if RETRIEVE:
         import healpy as hp
     
-        out_wbeam_txt = os.path.join(X_OUT, 'Wbeam_P8R3_SOURCEVETO_V2_32.txt')
+        out_wbeam_txt = os.path.join(X_OUT, 'P8R3_SOURCEVETO_V2_evt32_wbeam.txt')
         wb_2d = get_2D_wbeam(out_wbeam_txt, show=True)
         
         wpix = hp.wpix = hp.sphtfunc.pixwin(512)
