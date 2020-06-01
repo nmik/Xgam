@@ -25,9 +25,7 @@ import healpy as hp
 from astropy.io import fits as pf
 
 
-from Xgam import X_OUT
-from Xgam import X_CONFIG
-from Xgam import FT_DATA_FOLDER
+from Xgam import X_OUT, FT_DATA_FOLDER 
 from Xgam.utils.logging_ import logger, startmsg
 from Xgam.utils.parsing_ import get_energy_from_fits
 
@@ -42,19 +40,17 @@ PARSER = argparse.ArgumentParser(description=__description__,
 PARSER.add_argument('-c', '--config', type=str, required=True,
                     help='the input configuration file')
 PARSER.add_argument('--irfs', type=str, required=False,
-                    help='Instrument Response Functions')
+                    help='The Fermi-LAT IRFs to consider')
 PARSER.add_argument('--evtype', type=int, required=False,
-                    help='event type')
+                    help='The event type to consider')
 PARSER.add_argument('--psffile', type=str, required=False,
-                    help='PSF input file', default='default')
+                    help='PSF input file (if given --irfs and --evtype are discarded)', 
+                    default=None)
 PARSER.add_argument('--ltfile', type=str, required=False,
-                    help='livetimes file or list of files', default='')
+                    help='livetimes .fits or .txt with list of .fits', default='')
 PARSER.add_argument('--srcmask', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='sources mask activated')
-#PARSER.add_argument('--gpmask', type=str, choices=['no','shape', 'flat'],
-#                    default='no',
-#                    help='galactic plain mask (only "flat" available now)')
 PARSER.add_argument('--gpcut',type=ast.literal_eval,
                     default=25.0, help='Galactic cut (deg)')
 PARSER.add_argument('--nside',type=ast.literal_eval,
@@ -67,7 +63,7 @@ PARSER.add_argument('--outflabel',type=str,
                     default='4FGL_GP25', help='label of output file')
 PARSER.add_argument('--typesrcmask', type=ast.literal_eval,
                     choices=[1, 2], default=1,
-                    help='type of weighted sources mask')
+                    help='1=... ; 2=... ;')
 PARSER.add_argument('--show', type=bool, choices=[True, False],
                     default=False, help='if True the mask map is displayed')
 PARSER.add_argument('--overwrite', type=bool, choices=[True, False],
@@ -104,13 +100,11 @@ def mkSmartMask(**kwargs):
 
     logger.info('Checking PSF file...')
     PSF_FILE = kwargs['psffile']
-    PSF_FILE = os.path.join(FT_DATA_FOLDER, 'fits/' + PSF_FILE)
-    if os.path.exists(PSF_FILE):
-        logger.info('OK')
+    if PSF_FILE is not None:
+        logger.info('Using %s'%PSF_FILE)
     else:
-        if PSF_FILE is not 'default':
-            logger.info('ATT: File not found: %s'%PSF_FILE)
-            logger.info('Creating PSF file...')
+        logger.info('ATT: File not found: %s'%PSF_FILE)
+        logger.info('Creating PSF file with gtpsf...')
         try:
             IRFS = kwargs['irfs']
         except:
@@ -141,7 +135,7 @@ def mkSmartMask(**kwargs):
                 from Xgam.utils.ScienceTools_ import gtltsum
                 label_lt = IRFS + '_evt' + str(EVTYPE)
                 out_gtltsum = gtltsum(label_lt,lt_dict)
-                expcube = 'DEFAULT'
+                expcube = out_gtltsum
             else:
                 expcube = LT_FILE
             
@@ -160,7 +154,7 @@ def mkSmartMask(**kwargs):
                     'ntheta' : 100,
                     'chatter': 4,
                     'clobber': 'no'}
-        PSF_FILE = gtpsf(label_psf,psf_dict)
+        PSF_FILE = gtpsf(label_psf, psf_dict)
 
     #NOTE: IMPLEMENT TYPE2 ??
     if kwargs['typesrcmask'] == 1:
