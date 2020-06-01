@@ -1,15 +1,13 @@
 #!/usr/bin/env python                                                          #
 #                                                                              #
-# Autor: Michela Negro, University of Torino.                                  #
-# On behalf of the Fermi-LAT Collaboration.                                    #
+# Autor: Michela Negro, GSFC/CRESST/UMBC    .                                  #
 #                                                                              #
 # This program is free software; you can redistribute it and/or modify         #
-# it under the terms of the GNU GengReral Public License as published by       #
+# it under the terms of the GNU General Public License as published by         #
 # the Free Software Foundation; either version 3 of the License, or            #
 # (at your option) any later version.                                          #
 #                                                                              #
 #------------------------------------------------------------------------------#
-
 
 """ Example of configuration file for bin/mkmask.py.
 
