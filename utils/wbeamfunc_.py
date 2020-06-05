@@ -282,7 +282,7 @@ def main():
     if RETRIEVE:
         import healpy as hp
     
-        out_wbeam_txt = os.path.join(X_OUT, 'P8R3_SOURCEVETO_V2_evt32_wbeam.txt')
+        out_wbeam_txt = os.path.join(X_OUT, 'P8R3_SOURCEVETO_V2_evt56_wbeam.txt')
         wb_2d = get_2D_wbeam(out_wbeam_txt, show=True)
         
         wpix = hp.wpix = hp.sphtfunc.pixwin(512)
