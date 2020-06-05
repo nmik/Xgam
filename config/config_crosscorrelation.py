@@ -10,27 +10,55 @@
 #------------------------------------------------------------------------------#
 
 import os
-from Xgam import X_CONFIG, X_OUT, FT_DATA_FOLDER
+from Xgam import X_OUT
 
-FERMI_WBEAM_MATRIX = 'output/Wbeam_SOURCEVETO_56.txt'
+OUT_LABEL = 'Test_UGRB-CMB'
 
-FERMI_MASKS_LIST = []
+# ----> Fermi LAT products
 
-FERMI_MAPS_LIST = []
+FERMI_MAPS_LIST = [os.path.join(X_OUT, 'output_flux/10years_SV_t56_gp25src4fgl_glliemv07_flux_524-1000.fits'),
+				   os.path.join(X_OUT, 'output_flux/10years_SV_t56_gp25src4fgl_glliemv07_flux_1000-1737.fits'),
+                   os.path.join(X_OUT, 'output_flux/10years_SV_t56_gp25src4fgl_glliemv07_flux_1737-2754.fits'),
+                   os.path.join(X_OUT, 'output_flux/10years_SV_t56_gp25src4fgl_glliemv07_flux_2754-4786.fits'),
+                   os.path.join(X_OUT, 'output_flux/10years_SV_t56_gp25src4fgl_glliemv07_flux_4786-8317.fits'),
+                   os.path.join(X_OUT, 'output_flux/10years_SV_t56_gp25src4fgl_glliemv07_flux_8317-14454.fits')]        
+FERMI_MASKS_LIST = [os.path.join(X_OUT,'fits/Mask_gp25_4fgl_extsrc.fits'),
+ 					os.path.join(X_OUT,'fits/Mask_gp25_4fgl_extsrc.fits'),
+					os.path.join(X_OUT,'fits/Mask_gp25_4fgl_extsrc.fits'),
+					os.path.join(X_OUT,'fits/Mask_gp25_4fgl_extsrc.fits'),
+					os.path.join(X_OUT,'fits/Mask_gp25_4fgl_extsrc.fits'),
+					os.path.join(X_OUT,'fits/Mask_gp25_4fgl_extsrc.fits')]
+					
+FERMI_WBEAM_MATRIX = os.path.join(X_OUT, 'P8R3_SOURCEVETO_V2_evt56_Wbeam.txt')
+GAMMA = 2.3 #index of the power law assumed to compute the integral of the Wbeam in the energy bin
 
-LSS_TRACER_MAPS_LIST = []
+# ----> LSS tracer products
 
-POLCEPICE_DICT = {'mapfile' : None,
-                  'mapfile2' : None,
-                  'maskfile' : None,
-                  'maskfile2' : None,
-                  'clfile' : None,
-                  'cl_outmap_file' : None,
-                  'covfileout' : None,
-                  'corfile' : None,
+LSS_TRACER_MAPS_LIST = ['output/fits/CMB_lens_hp512.fits']
+LSS_TRACER_MASK_LIST = ['output/fits/mask_lens_hp512.fits']
+LSS_TRACER_WBEAM_LIST = [ ]
+
+# ----> APS parameters
+
+MAX_APS_MULTIPOLE = 1500
+BINNING_MULTIPOLE_MIN = 0
+BINNING_MULTIPOLE_MAX = 1500
+BINNING_ALGORITHM = 'lin'  #'lin' or 'log'
+BINNING_CUSTOM = None #None or list. If a list, previous parameters are neglected.
+
+# ----> PolSpice dictionary 
+
+POLCEPICE_DICT = {'mapfile' : 'DEFAULT',
+                  'mapfile2' : 'DEFAULT',
+                  'maskfile' : 'DEFAULT',
+                  'maskfile2' : 'DEFAULT',
+                  'clfile' : 'DEFAULT',
+                  'cl_outmap_file' : 'DEFAULT',
+                  'covfileout' : 'DEFAULT',
+                  'corfile' : 'DEFAULT',
 				  'apodizesigma' : 100,
                   'thetamax' : 100,
-                  'nlmax' : 1500,
+                  'nlmax' : MAX_APS_MULTIPOLE,
                   'verbosity' : 1,
                   'apodizetype' : 'NO',
                   'beam' : 'NO',
