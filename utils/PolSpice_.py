@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger
 
-def new_binning(xmax,xmin,nbin,bin_type='lin',out_type=int):
+def new_binning(xmin, xmax, nbin, bin_type='lin', out_type=int, custom_bins=None):
     """
     Define the new binning.
 
@@ -38,9 +38,11 @@ def new_binning(xmax,xmin,nbin,bin_type='lin',out_type=int):
 	   the array with the edges of the new binning
     """
     if bin_type == 'lin':
-        binning_ = np.linspace(xmin, xmax ,num=nbin ,dtype=out_type)
+        binning_ = np.linspace(xmin, xmax, num=nbin, dtype=out_type)
     elif bin_type == 'log':
         binning_ = np.logspace(np.log10(xmin), np.log10(xmax), num=nbin, dtype=out_type)
+    elif bin_type == 'custom' and type(custom_bins) == list:
+        binning_ = np.array(custom_bins)
     else:
         logger.info('ERROR: Invalid binning type. Choose lin or log.')
         sys.exit()
@@ -124,7 +126,7 @@ def pol_create_config(pol_dict, config_file_name):
         Name of the created PolSpice config file
     """
     if not os.path.exists(X_OUT+'output_polspice'):
-    os.makedirs(X_OUTX_OUT+'output_polspice')
+        os.makedirs(X_OUT+'output_polspice')
     pol_config = os.path.join(X_OUT, 'output_polspice/%s.txt'%config_file_name)
     pol_config_file = open(pol_config, 'w')
     for key in pol_dict:
@@ -145,7 +147,7 @@ def pol_run(config_file):
 
     return 0
 
-def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None):
+def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None, nbin=25, bin_type='lin'):
     """
     Parser of the txt output file of PolSpice, which contains the angular power spectrum (APS).
 
@@ -194,31 +196,32 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None):
             _cov[l] = _cov[l]/(wl[l]**2)
     else:
         pass
-# TO BE REWRITTEN --------------------------------------------------
-#    if rebin:
-#         logger.info('Rebinning in multipole range:')
-#         logger.info('%s'%str(rebinning))
-#         _lr, _clr, _clerrr = [], [], []
-#         for bmin, bmax in zip(rebinning[:-1], rebinning[1:]):
-#             logger.info('considering %i < li < %i'%(bmin,bmax))
-#             _index = np.where(np.logical_and(_l>=bmin, _l<bmax))[0]
-#             _index = _index.astype(int)
-#             _lmean = np.sqrt(bmin*bmax)
-#             _lr.append(_lmean)
-#             _clmean = np.mean(_cl[_index])
-#             _clerr = np.mean(_cov[bmin:bmax,bmin:bmax])
-#             logger.info('cl_mean %.3f'%_clmean)
-#             logger.info('cl_mean err %.3f'%np.sqrt(_clerr))
-#             _clr.append(_clmean)
-#             _clerrr.append(np.sqrt(_clerr))
-#         _l = np.array(_lr)
-#         _cl = np.array(_clr)
-#         _clerr = np.array(_clerrr)
-#     else:
-#         _clerr = np.array([np.sqrt(_cov[i][i]) for i in _l.astype(int)])
+
+    if rebin:
+        logger.info('Rebinning in multipole range:')
+        logger.info('%s'%str(rebinning))
+        _lr, _clr, _clerrr = [], [], []
+        rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type)
+        for bmin, bmax in zip(rebinning[:-1], rebinning[1:]):
+            logger.info('considering %i < li < %i'%(bmin,bmax))
+            _index = np.where(np.logical_and(_l>=bmin, _l<bmax))[0]
+            _index = _index.astype(int)
+            _lmean = np.sqrt(bmin*bmax)
+            _lr.append(_lmean)
+            _clmean = np.mean(_cl[_index])
+            _clerr = np.mean(_cov[bmin:bmax,bmin:bmax])
+            logger.info('cl_mean %.3f'%_clmean)
+            logger.info('cl_mean err %.3f'%np.sqrt(_clerr))
+            _clr.append(_clmean)
+            _clerrr.append(np.sqrt(_clerr))
+        _l = np.array(_lr)
+        _cl = np.array(_clr)
+        _clerr = np.array(_clerrr)
+    else:
+        _clerr = np.array([np.sqrt(_cov[i][i]) for i in _l.astype(int)])
     return np.array(_l), np.array(_cl),  np.array(_clerr)
 
-def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
+def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type='lin', show=False):
     """
     Parser of the fits output file of PolSpice containing the covariance
     matrix of the angular power spectra (APS).
@@ -252,22 +255,22 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, show=False):
         _cov = _cov/(wl**2)
         for l in _l:
             _cov[l] = _cov[l]/(wl[l]**2)
-# TO BE REWRITTEN --------------------------------------------------
-#     if rebin:
-#         _covr = []
-#         _lr = []
-#         for imin, imax in zip(rebinning[:-1], rebinning[1:]):
-#             _imean = np.sqrt(imin*imax)
-#             _covrj = []
-#             _lmean = np.sqrt(imin*imax)
-#             _lr.append(_lmean)
-#             for jmin, jmax in zip(rebinning[:-1], rebinning[1:]):
-#                 _covrj.append(np.mean(_cov[imin:imax, jmin:jmax]))
-#             _covr.append(np.array(_covrj))
-#         _cov = np.array(_covr)
-#         _l = np.array(_lr)
-#     else:
-#         pass
+    if rebin:
+        _covr = []
+        _lr = []
+        rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type)
+        for imin, imax in zip(rebinning[:-1], rebinning[1:]):
+            _imean = np.sqrt(imin*imax)
+            _covrj = []
+            _lmean = np.sqrt(imin*imax)
+            _lr.append(_lmean)
+            for jmin, jmax in zip(rebinning[:-1], rebinning[1:]):
+                 _covrj.append(np.mean(_cov[imin:imax, jmin:jmax]))
+            _covr.append(np.array(_covrj))
+        _cov = np.array(_covr)
+        _l = np.array(_lr)
+    else:
+        pass
     pic.dump(_cov,
              open(pol_cov_out_file.replace('.fits', '.pkl'),'wb'))
     if show==True:
@@ -347,8 +350,7 @@ def pol_cl_calculation(pol_dict, config_file_name, raw_corr=None, rebin=None, sh
 def main():
     """test module
     """
-    print rebinning
-
+    return 0
 
 
 if __name__ == '__main__':
