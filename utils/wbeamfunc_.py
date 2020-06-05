@@ -241,8 +241,6 @@ def get_1D_wbeam(wb_file, spectrum_spline, e_min, e_max):
         
     """
     en_, l_, _z_ = wbeam_parse(wb_file)
-    # spectrum_spline = xInterpolatedUnivariateSplineLinear(_ebin, 
-    #                                                    spectrum_spline(_ebin))
     int_spec = spectrum_spline.integral(e_min, e_max)
     fmt = dict(xname='$l$', xunits='', yname='Energy',
                    yunits='MeV', zname='W$_{beam}$(E,$l$)')
