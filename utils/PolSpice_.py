@@ -14,6 +14,7 @@
 """
 
 import os
+import sys
 import numpy as np
 import scipy as sp
 from scipy.special import lpmv as leg_m_n
@@ -25,7 +26,7 @@ from matplotlib import pyplot as plt
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger
 
-def new_binning(xmin, xmax, nbin, bin_type='lin', out_type=int, custom_bins=None):
+def new_binning(xmin, xmax, nbin=25, bin_type='lin', out_type=int, custom_bins=None):
     """
     Define the new binning.
 
@@ -37,11 +38,11 @@ def new_binning(xmin, xmax, nbin, bin_type='lin', out_type=int, custom_bins=None
 	array
 	   the array with the edges of the new binning
     """
-    if bin_type == 'lin':
+    if bin_type == 'lin' and custom_bins is None:
         binning_ = np.linspace(xmin, xmax, num=nbin, dtype=out_type)
-    elif bin_type == 'log':
+    elif bin_type == 'log' and custom_bins is None:
         binning_ = np.logspace(np.log10(xmin), np.log10(xmax), num=nbin, dtype=out_type)
-    elif bin_type == 'custom' and type(custom_bins) == list:
+    elif type(custom_bins) == list or type(custom_bins) == np.ndarray:
         binning_ = np.array(custom_bins)
     else:
         logger.info('ERROR: Invalid binning type. Choose lin or log.')
@@ -125,13 +126,11 @@ def pol_create_config(pol_dict, config_file_name):
     str
         Name of the created PolSpice config file
     """
-    if not os.path.exists(X_OUT+'output_polspice'):
-        os.makedirs(X_OUT+'output_polspice')
-    pol_config = os.path.join(X_OUT, 'output_polspice/%s.txt'%config_file_name)
+    pol_config = config_file_name
     pol_config_file = open(pol_config, 'w')
     for key in pol_dict:
         pol_config_file.write('%s = %s \n'%(key, str(pol_dict[key])))
-    logger.info('Created output/output_polspice/%s.txt'%config_file_name)
+    logger.info(config_file_name)
     return pol_config
 
 def pol_run(config_file):
@@ -147,7 +146,7 @@ def pol_run(config_file):
 
     return 0
 
-def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None, nbin=25, bin_type='lin'):
+def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type='lin', custom_bins=None, show=False):
     """
     Parser of the txt output file of PolSpice, which contains the angular power spectrum (APS).
 
@@ -186,22 +185,25 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None, n
             pass
     _l = np.array(_l)
     _cl = np.array(_cl)
-    if raw_corr is not None:
-        cn, wl = raw_corr[0], raw_corr[1]
+    if wl_array is not None:
+        wl = wl_array
         _l = _l[:len(wl)]
-        _cl = (_cl[:len(wl)] - cn)/(wl**2)
-        _cov = np.array([_cov[i][:len(wl)] for i in range(0,len(wl))])
-        _cov = _cov/(wl**2)
-        for l in _l:
-            _cov[l] = _cov[l]/(wl[l]**2)
+        _cl = (_cl[:len(wl)])/(wl**2)
+        _cov_ = np.array([_cov[i][:len(wl)] for i in range(0,len(wl))])
+        _cov_ = _cov_/(wl**2)
+        for l in range(len(wl)):
+            _cov_[l] = _cov_[l]/(wl**2)
     else:
         pass
 
     if rebin:
-        logger.info('Rebinning in multipole range:')
-        logger.info('%s'%str(rebinning))
+        logger.info('Rebinning in multipole range')
         _lr, _clr, _clerrr = [], [], []
-        rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type)
+        if custom_bins is not None:
+            logger.info('Custom multipole binning.')
+            rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type, custom_bins=custom_bins)  
+        else:
+            rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type)
         for bmin, bmax in zip(rebinning[:-1], rebinning[1:]):
             logger.info('considering %i < li < %i'%(bmin,bmax))
             _index = np.where(np.logical_and(_l>=bmin, _l<bmax))[0]
@@ -210,8 +212,8 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None, n
             _lr.append(_lmean)
             _clmean = np.mean(_cl[_index])
             _clerr = np.mean(_cov[bmin:bmax,bmin:bmax])
-            logger.info('cl_mean %.3f'%_clmean)
-            logger.info('cl_mean err %.3f'%np.sqrt(_clerr))
+            logger.info('cl_mean %.3e'%_clmean)
+            logger.info('cl_mean err %.3e'%np.sqrt(_clerr))
             _clr.append(_clmean)
             _clerrr.append(np.sqrt(_clerr))
         _l = np.array(_lr)
@@ -219,9 +221,20 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, raw_corr=None, rebin=None, n
         _clerr = np.array(_clerrr)
     else:
         _clerr = np.array([np.sqrt(_cov[i][i]) for i in _l.astype(int)])
+        
+    if show:
+        plt.figure()
+        plt.errorbar(_l, _cl, yerr=_clerr, fmt='.')
+        plt.plot([_l[0], _l[-1]], [0, 0], c='silver', linewidth=1)
+        plt.title('CAPS', size=20)
+        plt.xlabel('$\ell$', size=18)
+        plt.ylabel('C$_{\ell}$', size=18)
+        plt.xscale('log')
+        plt.show()
+     
     return np.array(_l), np.array(_cl),  np.array(_clerr)
 
-def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type='lin', show=False):
+def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type='lin', custom_bins=None, show=False):
     """
     Parser of the fits output file of PolSpice containing the covariance
     matrix of the angular power spectra (APS).
@@ -243,14 +256,13 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
     numpy tensor
         rebinned covariance matix (shaped as a tensor NxN, where N is the number of bins)
     """
-    show = False
     hdu = pf.open(pol_cov_out_file)
     _cov = hdu[0].data[0]
     hdu.close()
     _l = np.arange(len(_cov))
     if wl_array is not None:
         wl = wl_array
-        _l = np.arange(len( wl_array))
+        _l = np.arange(len(wl_array))
         _cov = np.array([_cov[i][:len(wl)] for i in range(0,len(wl))])
         _cov = _cov/(wl**2)
         for l in _l:
@@ -258,7 +270,10 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
     if rebin:
         _covr = []
         _lr = []
-        rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type)
+        if custom_bins is None:
+            rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type)
+        else:
+            rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type, custom_bins=custom_bins)  
         for imin, imax in zip(rebinning[:-1], rebinning[1:]):
             _imean = np.sqrt(imin*imax)
             _covrj = []
@@ -289,19 +304,19 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
          fig = plt.figure(facecolor='white')
          ax = fig.add_subplot(111)
          cax = ax.matshow(np.log10(np.abs(_cov)), origin='lower',
-                          aspect='auto', cmap='Spectral')
-         en_tick = list(np.logspace(0, np.log10(1500), 6).astype(int))
-         ax.set_yticklabels(['']+en_tick)
-         ax.set_xticklabels(['']+en_tick)
+                          aspect='auto', cmap='viridis')
+         #en_tick = list(np.logspace(0, np.log10(1500), 6).astype(int))
+         #ax.set_yticklabels(['']+en_tick)
+         #ax.set_xticklabels(['']+en_tick)
          plt.title('Covariance matrix')
          plt.xlabel('$l_{i}$')
          plt.ylabel('$l_{j}$')
          cb = plt.colorbar(cax, format='$%i$')
          plt.grid()
-         save_current_figure(os.path.basename(pol_cov_out_file).replace('.fits', ''))
+         plt.show()
     return _cov
 
-def pol_cl_calculation(pol_dict, config_file_name, raw_corr=None, rebin=None, show=False):
+def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, rebin=None, nbin=25, custom_bins=None, bin_type='lin', show=False):
     """
     Creates and runs the PolSpice config file, and returns the arrays of
     1) the multipoles (rebinned or not); 2) the Cl corresponding to the
@@ -331,20 +346,25 @@ def pol_cl_calculation(pol_dict, config_file_name, raw_corr=None, rebin=None, sh
         errors, tensor of the covariance matrix. If rebin is not None the arrays are
         the rebinned array.
     """
-    corr = raw_corr
+    wl = wl_array
     r = rebin
     s = show
+    nb = nbin
+    bt = bin_type
+    cbins = custom_bins
     pol_cl_out_file = pol_dict['clfile']
     pol_cov_out_file = pol_dict['covfileout']
     config_file = pol_create_config(pol_dict, config_file_name)
     pol_run(config_file)
-    cn, wl = 0., None
-    if raw_corr is not None:
-        cn, wl = raw_corr[0], raw_corr[1]
-    _l, _cl, _clerr= pol_cl_parse(pol_cl_out_file, pol_cov_out_file,
-                                  raw_corr=corr,rebin=r)
-    _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl,
-                         rebin=r, show=s)
+    
+    if custom_bins == None:
+        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=wl, rebin=r, nbin=nb, bin_type=bt)
+        _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, rebin=r,  nbin=nb, bin_type=bt, show=s)
+    else:
+        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file,
+                                  wl_array=wl, rebin=r, nbin=nb, bin_type=bt, custom_bins=cbins)  
+        _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, rebin=r,  nbin=nb, bin_type=bt,  custom_bins=cbins, show=s)                           
+    
     return _l, _cl, _clerr, _cov
 
 def main():
