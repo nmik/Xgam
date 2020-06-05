@@ -81,6 +81,7 @@ def mkRestyle(**kwargs):
     if type(fore_files_) == str and fore_files_.endswith(('.txt','.dat')):
         fore_files_ = open(fore_files_,'r')
         fore_files_ = fore_files_.read().splitlines()
+        
     if type(mask_files_) == str and mask_files_.endswith(('.txt','.dat')):
         mask_files_ = open(mask_files_,'r')
         mask_files_ = mask_files_.read().splitlines()
@@ -127,7 +128,7 @@ def mkRestyle(**kwargs):
         if type(mask_files_) == list:
             mask_file = mask_files_[i]
         else:
-            pass
+            mask_file = mask_files_
         logger.info('Using mask file: %s'%mask_file)
         mask = hp.read_map(mask_file)
         _unmasked = np.where(mask > 0)[0]
