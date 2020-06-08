@@ -48,7 +48,7 @@ PARSER.add_argument('--psffile', type=str, required=False,
 PARSER.add_argument('--ltfile', type=str, required=False,
                     help='livetimes .fits or .txt with list of .fits', default='')
 PARSER.add_argument('--srcmask', type=ast.literal_eval, choices=[True, False],
-                    default=False,
+                    default=True,
                     help='sources mask activated')
 PARSER.add_argument('--gpcut',type=ast.literal_eval,
                     default=25.0, help='Galactic cut (deg)')
@@ -164,8 +164,8 @@ def mkSmartMask(**kwargs):
     nside = kwargs['nside']
     out_label = kwargs['outflabel']
     npix = hp.nside2npix(nside)
-    src_cat = os.path.join(FT_DATA_FOLDER, 'fits/' + kwargs['srccat'])
-    src_ext_cat = os.path.join(FT_DATA_FOLDER, 'fits/' + kwargs['srcextcat'])
+    src_cat = kwargs['srccat']
+    src_ext_cat = kwargs['srcextcat']
     out_name_list = os.path.join(X_OUT, 'fits/Mask_'+out_label+'_list.txt')
     out_list = []
 
