@@ -93,7 +93,7 @@ def pol_ccf_parse(pol_ccf_out_file, pol_cov_out_file, rebin=None, pol='circular'
         logging.info('ERROR: Invalid polarization type in covariance tranformation!')
         sys.exit()
 
-    l_ = np.arange(len(_cov),dtype=int)
+    l_ = np.arange(len(_cov), dtype=int)
     for th in th_:
         Pl_.append(leg_m_n(leg_ord, l_, np.cos(np.radians(th))))
     Pl_ = np.array(Pl_)
@@ -357,7 +357,7 @@ def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, rebin=None, nb
     config_file = pol_create_config(pol_dict, config_file_name)
     pol_run(config_file)
     
-    if custom_bins == None:
+    if custom_bins is None:
         _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=wl, rebin=r, nbin=nb, bin_type=bt)
         _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, rebin=r,  nbin=nb, bin_type=bt, show=s)
     else:
