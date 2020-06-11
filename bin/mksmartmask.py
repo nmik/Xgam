@@ -158,6 +158,9 @@ def mkSmartMask(**kwargs):
     #NOTE: IMPLEMENT TYPE2 ??
     if kwargs['typesrcmask'] == 1:
         from Xgam.utils.mkmask_ import mask_src_fluxPSFweighted_1 as mask_src
+    else:
+        from Xgam.utils.mkmask_ import mask_src_fluxPSFweighted_2 as mask_src
+    
     from Xgam.utils.mkmask_ import mask_gp
     from Xgam.utils.parsing_ import get_psf_en_univariatespline
 
@@ -166,7 +169,7 @@ def mkSmartMask(**kwargs):
     npix = hp.nside2npix(nside)
     src_cat = kwargs['srccat']
     src_ext_cat = kwargs['srcextcat']
-    out_name_list = os.path.join(X_OUT, 'fits/Mask_'+out_label+'_list.txt')
+    out_name_list = os.path.join(X_OUT, 'fits/MaskSmart_'+out_label+'_list.txt')
     out_list = []
 
     for i, (minb, maxb) in enumerate(macro_bins):
@@ -176,7 +179,7 @@ def mkSmartMask(**kwargs):
         E_MEAN = np.sqrt(emax[0]*emin[-1])
         logger.info('Energies %.1f - %.1f [MeV]' %(E_MIN, E_MAX))
 
-        out_name = os.path.join(X_OUT, 'fits/Mask_'+out_label+'_%.1f_MeV.fits'%(E_MIN))
+        out_name = os.path.join(X_OUT, 'fits/MaskSmart_'+out_label+'_%.1f_MeV.fits'%(E_MIN))
         out_list.append(out_name)
         if os.path.exists(out_name) and not kwargs['overwrite']:
             logger.info('ATT: %s already exists! \n'%out_name)
