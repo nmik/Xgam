@@ -141,8 +141,8 @@ def mask_src_fluxPSFweighted_1(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, ENERGY, NSIDE
     extsrc_cat.close()
     psf_en = PSF_SPLINE(ENERGY)
     flux_min, flux_max = min(FLUX), max(FLUX)
-    rad_min = 2*psf_en
-    rad_max = 5*psf_en
+    rad_min = 1.5*psf_en
+    rad_max = 3*psf_en
     RADdeg = rad_min + FLUX*((rad_max - rad_min)/(flux_max - flux_min)) -\
         flux_min*((rad_max - rad_min)/(flux_max - flux_min))
     RADrad = np.radians(RADdeg)
