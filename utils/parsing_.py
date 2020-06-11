@@ -24,6 +24,84 @@ from Xgam.utils.matplotlib_ import *
 from Xgam.utils.spline_ import xInterpolatedBivariateSplineLinear
 from Xgam.utils.spline_ import xInterpolatedUnivariateSplineLinear
 
+
+def parse_polspice_aps(cl_file):
+    """
+    Parsing of the *_cls.txt files.
+
+    cl_file : str
+        This file is created by bin/mkpolspicecl.py app.
+    """
+    ls = []
+    cls = []
+    clerrs = []
+    emin, emax = [], []
+    f = open(cl_file, 'r')
+    for line in f:
+        if 'ENERGY\t' in line:
+            e1, e2 = [float(item) for item in line.split()[1:]]
+            emin.append(e1)
+            emax.append(e2)
+        if 'multipole\t' in line:
+            l = np.array([float(item) for item in line.split()[1:]])
+            ls.append(l)
+        if 'Cl\t' in line:
+            cl = np.array([float(item) for item in line.split()[1:]])
+            cls.append(cl)
+        if 'Cl_ERR' in line:
+            cl_err = np.array([float(item) for item in line.split()[1:]])
+            clerrs.append(cl_err)
+    f.close()
+    return [np.array(emin),np.array(emax), np.array(ls), \
+                                    np.array(cls),  np.array(clerrs)]
+
+def parse_datafluxmaps(out_dataflux_map_file):
+    """Parsing of *_parameters.txt files.
+
+       cl_param_file : str
+           This file is created by bin/mkdatarestyle.py app.
+    """
+    logger.info('Loading parameters from %s'%out_dataflux_map_file)
+    ff = open(out_dataflux_map_file, 'r')
+    _emin, _emax, _emean = [], [], []
+    _f, _ferr, _cn, _fsky = [], [], [], []
+    _n, _n_sx, _n_dx, _c, _c_sx, _c_dx = [], [], [], [], [], []
+    for line in ff:
+        try:
+            emin, emax, emean, f, ferr, cn, fsky, n, nsx, ndx, c, csx, cdx = [float(item) for item in \
+                                                        line.split()]  
+            _emin.append(emin)
+            _emax.append(emax)
+            _emean.append(emean)
+            _f.append(f)
+            _ferr.append(ferr)
+            _cn.append(cn)
+            _fsky.append(fsky)
+            _n.append(n)
+            _n_sx.append(nsx)
+            _n_dx.append(ndx)
+            _c.append(c)
+            _c_sx.append(csx)
+            _c_dx.append(cdx)
+        except:
+            try:
+                emin, emax, emean, f, ferr, cn, fsky = [float(item) for item in line.split()]   
+                _emin.append(emin)
+                _emax.append(emax)
+                _emean.append(emean)
+                _f.append(f)
+                _ferr.append(ferr)
+                _cn.append(cn)
+                _fsky.append(fsky)   
+            except:
+                pass
+            
+    ff.close()
+    print(np.array(_c_sx), np.array(_c_dx))
+    return [np.array(_emin), np.array(_emax), np.array(_emean), np.array(_f), \
+        np.array(_ferr), np.array(_cn), np.array(_fsky), np.array(_n),np.array(_n_sx),\
+        np.array(_n_dx), np.array(_c), np.array(_c_sx), np.array(_c_dx)]
+
 def get_energy_from_fits(fits_file, minbinnum=0, maxbinnum=100, mean='log'):
     """Returns a list with the center values of the energy bins
 
