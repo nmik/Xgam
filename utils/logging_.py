@@ -44,10 +44,10 @@ def abort(message = ''):
 def startmsg():
     """Print the start message.
     """
-    BUILD_DATE = '2019'
+    BUILD_DATE = '2019-2020'
     FERMI_DATA_RELEASE = 'P8R3_V2'
-    print('\n    Welcome to Xcorr (built on %s).\n' %BUILD_DATE)
-    print('    Autor: Michela Negro, University of Torino.')
+    print('\n    Welcome to Xgam (built on %s).\n' %BUILD_DATE)
+    print('    Autors: Michela Negro, NASA-GSFC/CRESST-UMBC.')
     print('    On behalf of the Fermi-LAT Collaboration.\n')
     print('    This is a framework created to prepare Fermi-LAT data')
     print('    for some cross-correlation analyses. \n')
