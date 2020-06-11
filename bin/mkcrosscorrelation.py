@@ -176,8 +176,9 @@ def mkCross(**kwargs):
         if lss_wb_ is not None:
             logger.info('Getting the LSS beam window function ...')
             lss_wb = np.ones(len(wb))
-                    
-        cl_txt.write('ENERGY\t %.2f - %.2f \n'%(emin, emax))
+        cl_txt.write('MAP1 ---> %s\n'%(m1_f))
+        cl_txt.write('MAP2 ---> %s\n'%(m2_f))
+        cl_txt.write('ENERGY\t %.2f %.2f \n'%(emin, emax))
 
         out_folder =  os.path.join(X_OUT, 'output_pol')
         if not os.path.exists(out_folder):
@@ -229,7 +230,7 @@ def mkCross(**kwargs):
         
         cl_txt.write('multipole\t%s\n'%str(list(_l)).replace('[','').replace(']','').replace(', ', ' '))
         cl_txt.write('Cl\t%s\n'%str(list(_cl)).replace('[','').replace(']','').replace(', ', ' '))
-        cl_txt.write('Cl_ERR\t%s\n\n'%str(list(_cl_err)).replace('[','').replace(']','').replace(', ', ' '))
+        cl_txt.write('Cl_ERR\t%s\n\n\n'%str(list(_cl_err)).replace('[','').replace(']','').replace(', ', ' '))
          
     cl_txt.close()
 
