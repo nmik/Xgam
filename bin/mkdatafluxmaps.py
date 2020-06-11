@@ -75,7 +75,7 @@ def mkRestyle(**kwargs):
     in_labels_list = data.IN_LABELS_LIST
     mask_files_ = data.MASK_FILE
     micro_bin_file = data.MICRO_BINS_FILE
-    igrb_file = data.IGRB_FILE
+    cguess_file = data.IGRB_FILE
     bincalc = data.BINCALC
 
     if type(fore_files_) == str and fore_files_.endswith(('.txt','.dat')):
@@ -200,7 +200,7 @@ def mkRestyle(**kwargs):
         if kwargs['foresub'] == True:
             logger.info('Foreground subtraction activated...')
             from Xgam.utils.foregroundfit_ import fit_foreground_poisson
-            from Xgam.utils.foregroundfit_ import get_fore_integral_flux_map_
+            from Xgam.utils.foregroundfit_ import get_fore_integral_flux_map
 
             micro_fore_map_, micro_CN_ = [], []
             micro_fore_N_, micro_fore_N_errsx_, micro_fore_N_errdx_ = [], [], []
@@ -209,11 +209,12 @@ def mkRestyle(**kwargs):
             for b, mb in enumerate(micro_bins):
                 fore_model_map = get_fore_integral_flux_map(fore_files_, emin[b], emax[b])
                 micro_fore_map_.append(fore_model_map)
-                igrb_data = np.genfromtxt(igrb_file)
-                igrb_interp = interp1d(igrb_data[:,0],igrb_data[:,1])
+                cguess_data = np.genfromtxt(cguess_file)
+                cguess_interp = interp1d(cguess_data[:,0], cguess_data[:,1])
+                
                 energy = np.sqrt(emin[b]*emax[b])
                 delta_en = emax[b]-emin[b]
-                c_guess = igrb_interp(energy)*energy**2/delta_en
+                c_guess = cguess_interp(energy)
                 n, c, n_sx, n_dx, c_sx, c_dx = \
                                    fit_foreground_poisson(fore_model_map,
 														  time_sum_cnt_[b],
@@ -258,7 +259,9 @@ def mkRestyle(**kwargs):
                     fore_norm_flux = micro_fore_N_[b]*micro_fore_map_[b]
                     fore_norm_count = (fore_norm_flux*time_sum_exp_[b]*sr).astype(int)
                     micro_flux_forsesub = micro_time_sum_flux - fore_norm_flux
-                    micro_sqrtcount_forsesub = np.sqrt(time_sum_cnt_[b]-fore_norm_count)
+                    micro_count_forsesub = time_sum_cnt_[b]-fore_norm_count
+                    micro_count_forsesub[micro_count_forsesub<0] = 0
+                    micro_sqrtcount_forsesub = np.sqrt(micro_count_forsesub)
                     micro_fluxerr_forsesub = micro_sqrtcount_forsesub/time_sum_exp_[b]/sr
                 micro_flx_foresub_map_.append(micro_flux_forsesub)
                 micro_flxerr_foresub_map_.append(micro_fluxerr_forsesub)
@@ -268,7 +271,8 @@ def mkRestyle(**kwargs):
             logger.info('Computing the flux for each micro energy bin...')
             time_sum_flux_ = time_sum_cnt_/time_sum_exp_/sr
             time_sum_fluxerr_ = np.sqrt(time_sum_cnt_)/time_sum_exp_/sr
-
+        
+        logger.info('Summing in energies micro fluxes ...')
         time_ene_sum_flux_ = np.sum(time_sum_flux_, axis=0)
         time_ene_sum_fluxerr_ = np.sqrt(np.sum(time_sum_fluxerr_**2, axis=0))
 
@@ -276,9 +280,10 @@ def mkRestyle(**kwargs):
         time_ene_sum_flux_masked.mask = np.logical_not(mask)
 
         MACRO_MEAN_FLUX = np.average(time_ene_sum_flux_[_unmasked])
-        MACRO_MEAN_FLUX_ERR = np.nanmean(time_ene_sum_fluxerr_[_unmasked])
+        MACRO_MEAN_FLUX_ERR = np.average(time_ene_sum_fluxerr_[_unmasked])
         FLUX_.append(MACRO_MEAN_FLUX)
         FLUX_ERR_.append(MACRO_MEAN_FLUX_ERR)
+        logger.info('>>----> Emin, Emax, Emean : %.2f, %.2f, %.2f [MeV]'%(E_MIN, E_MAX, E_MEAN))
         logger.info('>>----> MEAN FLUX = %.2e [cm-2s-1sr-1]' %MACRO_MEAN_FLUX)
         logger.info('>>----> MEAN FLUX ERR / PIX = %.2e [cm-2s-1sr-1]' %MACRO_MEAN_FLUX_ERR)
 
@@ -293,16 +298,16 @@ def mkRestyle(**kwargs):
         hp.write_map(macro_flx_name, time_ene_sum_flux_, overwrite=overwrite)
         hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked, overwrite=overwrite)
 
-    logger.info('Writing output file...')
-    if kwargs['foresub'] == True:
-        for i in range(len(FLUX_)):
-            outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%.2f\t%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\n' \
+        logger.info('Writing output file...')
+        if kwargs['foresub'] == True:
+            for i in range(len(FLUX_)):
+                outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%.2f\t%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\n' \
 						  %(E_MIN_[i], E_MAX_[i], E_MEAN_[i], FLUX_[i], FLUX_ERR_[i],
 						    CN_[i], FSKY_[i], fore_N_[i], fore_N_errsx_[i], fore_N_errdx_[i],
 						    fore_C_[i], fore_C_errsx_[i], fore_C_errdx_[i]))
-    else:
-        for i in range(len(FLUX_)):
-            outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%f\n' \
+        else:
+            for i in range(len(FLUX_)):
+                outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%f\n' \
 						  %(E_MIN_[i], E_MAX_[i], E_MEAN_[i], FLUX_[i], FLUX_ERR_[i],
 						  CN_[i], FSKY_[i]))
 
