@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger, startmsg
+from Xgam.utils.spline_ import xInterpolatedUnivariateSplineLinear
 
 FORE_EN = re.compile('\_\d+\.')
 
@@ -123,6 +124,16 @@ def find_outer_energies(en_val, en_arr):
     return en_sx, en_dx
 
 @jit
+def myfactorial(_x):
+    _facx = []
+    for x in _x:
+        n = 1
+        for i in range(2, x+1):
+            n *= i
+        _facx.append(n)
+    return np.array(_facx)
+    
+@jit
 def poisson_likelihood(norm_guess, const_guess, fore_map, data_map, exp=None, sr=None):
     """
     Compute the log-likelihood as decribed here:
@@ -162,13 +173,50 @@ def poisson_likelihood(norm_guess, const_guess, fore_map, data_map, exp=None, sr
     lh = 0
     if exp is not None:
         for i, f in enumerate(fore_map):
-            lh += (a*f+b)*exp[i]*sr + np.log(factorial_data[i]) - \
-                data_map[i]*np.log((a*f+b)*exp[i]*sr)
+            lh += (a*f+b)*exp[i]*sr+np.log(factorial_data[i])-data_map[i]*np.log((a*f+b)*exp[i]*sr)
     else:
         for i, f in enumerate(fore_map):
-            lh += np.sum(((a*f+b)+np.log(factorial_data[i]) -\
-                              data_map[i]*np.log((a*f+b))))
+            lh += np.sum(((a*f+b)+np.log(factorial_data[i])-data_map[i]*np.log((a*f+b))))
     return lh
+
+
+def get_2params_profile_likelihood(lh_matrix, param1_list, param2_list):
+    """
+    Returns splines with profile likelihood for the two parameters of the fit.
+    NOTE: param1 is supposed to be the normalization, param2 the constant.
+    """
+    
+    n_lh = np.amin(lh_matrix, axis=1)
+    c_lh = np.amin(lh_matrix, axis=0)
+        
+    fmt1 = dict(xname='N', xunits='', yname='Likelihood', yunits='')
+    spline1 = xInterpolatedUnivariateSplineLinear(param1_list, n_lh, **fmt1)
+    fmt2 = dict(xname='C', xunits='', yname='Likelihood', yunits='')
+    spline2 = xInterpolatedUnivariateSplineLinear(param2_list, c_lh, **fmt2)
+    
+    return spline1, spline2
+    
+def get_param_error(profilelh_spline, param_array, lh_delta=2.3):
+    """
+    """
+
+    lh_array = profilelh_spline(param_array)
+    lh_min_idx = np.argmin(lh_array)
+    lherr = lh_array[lh_min_idx]+lh_delta
+
+    if lh_min_idx == 0:
+        logger.info('ATT: UPPER limit!')
+        sx_err = param_array[0]
+        dx_err = param_array[-1]
+    elif lh_min_idx == len(lh_array)-1:
+        logger.info('ATT: LOWER limit!')
+        sx_err = param_array[0]
+        dx_err = param_array[-1]
+    else:
+        sx_err = param_array[np.abs(lh_array[:lh_min_idx]-lherr).argmin()]
+        dx_err = param_array[lh_min_idx + np.abs(lh_array[lh_min_idx:]-lherr).argmin()]
+        
+    return sx_err, dx_err
 
 
 def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
@@ -209,29 +257,34 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
         C's right error, C's left error
     """
     #show=True
+    #mask_map=None
     logger.info('Performing poissonian fit...')
     norm_guess = n_guess
     igrb_guess = c_guess
     nside_out = 64
     mask = 0.
+    logger.info('N guess = %.2f - C guess = %.1e'%(norm_guess, igrb_guess))
     if mask_map is None:
         logger.info('fit outside default mask: 30deg gp, 2 deg srcs.')
-        mask_f = os.path.join(GRATOOLS_CONFIG, 'fits/Mask64_src2_gp30.fits')
+        mask_f = os.path.join(X_OUT, 'fits/Mask_hp64_src2_gp30.fits')
         mask = hp.read_map(mask_f)
     else:
         logger.info('fit outside mask given in config file.')
         mask = mask_map
+        mask = np.array(hp.ud_grade(mask, nside_out=nside_out,
+                                      power=-2))
+        mask[np.where(mask!=np.amax(mask))[0]] = 0
+        mask[np.where(mask==np.amax(mask))[0]] = 1
     logger.info('down grade...')
     fore_repix = np.array(hp.ud_grade(fore_map, nside_out=nside_out))
     data_repix = np.array(hp.ud_grade(data_map, nside_out=nside_out,
                                       power=-2))
-    mask_repix = np.array(hp.ud_grade(mask, nside_out=nside_out,
-                                      power=-2))
-    mask_repix[np.where(mask_repix!=np.amax(mask_repix))[0]] = 0
-    mask_repix[np.where(mask_repix==np.amax(mask_repix))[0]] = 1
-    _unmask = np.where(mask_repix > 1e-30)[0]
-    norm_list = np.linspace(norm_guess*0.3, norm_guess*1.5, 50)
-    igrb_list = np.linspace(igrb_guess*0.01, igrb_guess*20., 200)
+    _unmask = np.where(mask > 1e-30)[0]
+
+    norm_list = np.linspace(norm_guess-0.8, norm_guess+0.8, 200)
+    igrb_list = np.logspace(np.log10(igrb_guess*0.01), np.log10(igrb_guess*10), 200)
+    
+    logger.info('-------------------------------')
     logger.info('Minimization likelihood run1...')
     lh_list = []
     combinations = list(product(norm_list, igrb_list))
@@ -247,14 +300,33 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
             lh_list.append(lh)
     else:
         for i,j in product(norm_list, igrb_list):
-            lh = poisson_likelihood(i, j, fore_repix[_unmask],
-                                    data_repix[_unmask])
+            lh = poisson_likelihood(i, j, fore_repix[_unmask], data_repix[_unmask])
             lh_list.append(lh)
-    lh_min = np.argmin(np.array(lh_list))
-    (norm_min, igrb_min) = combinations[lh_min]
-    logger.info('Run1 results: n=%.3f c=%.1e'%(norm_min, igrb_min))
-    norm_list = np.linspace(norm_min*0.7, norm_min*1.2, 51)
-    igrb_list = np.linspace(igrb_min*0.1, igrb_min*10, 101)
+    
+    lh_list = np.array(lh_list)
+    lh_matrix = lh_list.reshape(len(norm_list), len(igrb_list))
+    prof_lh_norm, prof_lh_igrb = get_2params_profile_likelihood(lh_matrix, norm_list, igrb_list)
+    
+    nn = np.linspace(np.amin(norm_list), np.amax(norm_list), 1000)
+    cc = np.linspace(np.amin(igrb_list), np.amax(igrb_list), 1000)
+    
+    lh_min = np.amin(prof_lh_norm(nn))
+    logger.info('Minimum -LogL = %s'%lh_min)
+    
+    norm_min = nn[np.argmin(prof_lh_norm(nn))]
+    igrb_min = cc[np.argmin(prof_lh_igrb(cc))]
+    logger.info('Run1 results: n=%.3f c=%e'%(norm_min, igrb_min))
+    
+    norm_sxerr, norm_dxerr = get_param_error(prof_lh_norm, nn, lh_delta=2.3)
+    logger.info('Norm err: %.4f - %.4f'%(norm_sxerr, norm_dxerr))
+    igrb_sxerr, igrb_dxerr = get_param_error(prof_lh_igrb, cc, lh_delta=2.3)
+    logger.info('Igrb err: %.2e - %.2e'%(igrb_sxerr, igrb_dxerr))
+    
+    norm_list = np.linspace(norm_min-0.3, norm_min+0.3, 100)
+    igrb_list = np.linspace(igrb_min*0.1, igrb_min*10, 200)
+
+    """
+    logger.info('-------------------------------')
     logger.info('Minimization likelihood run2...')
     lh_list = []
     combinations = np.array(list(product(norm_list, igrb_list)))
@@ -273,27 +345,50 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
             lh = poisson_likelihood(i, j, fore_repix[_unmask],
                                     data_repix[_unmask])
             lh_list.append(lh)
+            
     lh_list = np.array(lh_list)
-    lh_min = np.argmin(lh_list)
-    logger.info('Minimum -LogL = %s'%lh_list[lh_min])
-    (norm_min, igrb_min) = combinations[lh_min]
+    lh_matrix = lh_list.reshape(len(norm_list), len(igrb_list))
+    prof_lh_norm, prof_lh_igrb = get_2params_profile_likelihood(lh_matrix, norm_list, igrb_list)
+    
+    nn = np.linspace(np.amin(norm_list), np.amax(norm_list), 500)
+    cc = np.linspace(np.amin(igrb_list), np.amax(igrb_list), 1000)
+    
+    lh_min = np.amin(prof_lh_norm(nn))
+    lh_delta = lh_min+2.3
+    logger.info('Minimum -LogL = %s'%lh_min)
+    
+    norm_min = nn[np.argmin(prof_lh_norm(nn))]
+    igrb_min = cc[np.argmin(prof_lh_igrb(cc))]
     logger.info('Run2 results: n=%.3f c=%e'%(norm_min, igrb_min))
-    lh_delta = np.array(lh_list)[lh_min]+2.3
-    index = np.where(np.array(lh_list) < lh_delta)[0]
-    _norm = np.array([x[0] for x in combinations[index]])
-    logger.info('Norm err: %.4f - %.4f'%(_norm[0], _norm[-1]))
-    _igrb = np.array([x[1] for x in combinations[index]])
-    logger.info('Igrb err: %.3e - %.3e'%(np.amin(_igrb), np.amax(_igrb)))
-
+    
+    norm_sxerr, norm_dxerr = get_param_error(prof_lh_norm, nn, lh_delta)
+    logger.info('Norm err: %.4f - %.4f'%(norm_sxerr, norm_dxerr))
+    igrb_sxerr, igrb_dxerr = get_param_error(prof_lh_igrb, cc, lh_delta)
+    logger.info('Norm err: %.4f - %.4f'%(igrb_sxerr, igrb_dxerr))
+    """
     if show == True:
-        n = np.array([x[0] for x in combinations])
+        
         plt.figure(facecolor='white')
-        plt.plot(n, lh_list, 'o', color='coral', alpha=0.3)
-        plt.plot(norm_min, lh_list[lh_min] , 'r*')
-        plt.plot([_norm[0], _norm[-1]], [lh_delta, lh_delta], 'r-')
+        plt.plot(nn, prof_lh_norm(nn), '-', color='black')
+        plt.plot([norm_min, norm_min], [lh_min-10, lh_min+40], color='red')
+        plt.plot([norm_sxerr, norm_sxerr], [lh_min-2, lh_min+40], 'r--', alpha=0.7)
+        plt.plot([norm_dxerr, norm_dxerr], [lh_min-2, lh_min+40], 'r--', alpha=0.7)
         plt.xlabel('Normalization')
         plt.ylabel('-Log(Likelihood)')
-
+        plt.ylim(lh_min-5, lh_min+30)
+        plt.xlim(norm_min-0.2, norm_min+0.2)
+        
+        plt.figure(facecolor='white')
+        plt.plot(cc, prof_lh_igrb(cc), '-', color='black')
+        plt.plot([igrb_min, igrb_min], [lh_min-10, lh_min+40], color='red')
+        plt.plot([igrb_sxerr, igrb_sxerr], [lh_min-2, lh_min+40], 'r--', alpha=0.7)
+        plt.plot([igrb_dxerr, igrb_dxerr], [lh_min-2, lh_min+40], 'r--', alpha=0.7)
+        plt.xlabel('Constant')
+        plt.ylabel('-Log(Likelihood)')
+        plt.ylim(lh_min-5, lh_min+30)
+        plt.xlim(igrb_min*0.9, igrb_min*1.1)
+        plt.xscale('log')
+        """
         igrb = np.array([x[1] for x in combinations])
         plt.figure(facecolor='white')
         plt.plot(igrb, lh_list, 'o', color='coral', alpha=0.3)
@@ -335,8 +430,10 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
         plt.contourf(z, [zmin, zmin+2.3, zmin+4.61, zmin+5.99],
                      colors='w', origin='lower', alpha=0.3)
         plt.show()
-    return norm_min, igrb_min, _norm[0], _norm[-1], np.amin(_igrb), \
-        np.amax(_igrb)
+        """
+        plt.show()
+        
+    return norm_min, igrb_min, norm_sxerr, norm_dxerr, igrb_sxerr, igrb_dxerr
 
 
 def main():
