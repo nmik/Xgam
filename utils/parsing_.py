@@ -35,6 +35,7 @@ def parse_polspice_aps(cl_file):
     ls = []
     cls = []
     clerrs = []
+    _cov_ = []
     emin, emax = [], []
     f = open(cl_file, 'r')
     for line in f:
@@ -51,9 +52,13 @@ def parse_polspice_aps(cl_file):
         if 'Cl_ERR' in line:
             cl_err = np.array([float(item) for item in line.split()[1:]])
             clerrs.append(cl_err)
+        if 'COV_FILE' in line:
+            cov_f = line.split()[-1]
+            cov = np.load(cov_f, allow_pickle=True)
+            _cov_.append(cov)
     f.close()
-    return [np.array(emin),np.array(emax), np.array(ls), \
-                                    np.array(cls),  np.array(clerrs)]
+    return [np.array(emin),np.array(emax), np.array(ls), np.array(cls), \
+                                                  np.array(clerrs), np.array(_cov_)]
 
 def parse_datafluxmaps(out_dataflux_map_file):
     """Parsing of *_parameters.txt files.
@@ -97,7 +102,6 @@ def parse_datafluxmaps(out_dataflux_map_file):
                 pass
             
     ff.close()
-    print(np.array(_c_sx), np.array(_c_dx))
     return [np.array(_emin), np.array(_emax), np.array(_emean), np.array(_f), \
         np.array(_ferr), np.array(_cn), np.array(_fsky), np.array(_n),np.array(_n_sx),\
         np.array(_n_dx), np.array(_c), np.array(_c_sx), np.array(_c_dx)]
