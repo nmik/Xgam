@@ -47,9 +47,6 @@ PARSER.add_argument('--psffile', type=str, required=False,
                     default=None)
 PARSER.add_argument('--ltfile', type=str, required=False,
                     help='livetimes .fits or .txt with list of .fits', default='')
-PARSER.add_argument('--srcmask', type=ast.literal_eval, choices=[True, False],
-                    default=True,
-                    help='sources mask activated')
 PARSER.add_argument('--gpcut',type=ast.literal_eval,
                     default=25.0, help='Galactic cut (deg)')
 PARSER.add_argument('--nside',type=ast.literal_eval,
