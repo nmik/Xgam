@@ -74,9 +74,10 @@ def flux_view(**kwargs):
     
     params = parse_datafluxmaps(kwargs['infile'])
     _emin, _emax, _emean = params[0], params[1], params[2]
-    
-    if len(params) < 8:
+
+    if len(params[-1]) == 0:
         _f, _ferr = params[3], params[4]
+
     else:
         _n, _nsx, _ndx = params[-6], params[-5], params[-4]
         _f, _fsxerr, _fdxerr = params[-3], params[-2], params[-1]
@@ -103,10 +104,11 @@ def flux_view(**kwargs):
     plt.ylim(1e-7, 4.e-2)
     plt.xlim(100, 1000000)
     
-    if len(params) > 8:
+    if len(params[-1]) != 0:
         logger.info('Plotting Foreground best-fit Normalization ...')
         
         plt.figure()
+        plt.title(kwargs['title'])
         plt.fill_between(_emean, _nsx, _ndx, color='lightcoral', alpha=0.5)
         plt.plot(_emean, _n, 'ro-')
         plt.xscale('log')
