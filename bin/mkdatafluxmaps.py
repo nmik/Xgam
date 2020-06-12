@@ -289,25 +289,32 @@ def mkRestyle(**kwargs):
 
         logger.info('Saving macro flux maps...')
         out_flx_folder = os.path.join(X_OUT, 'output_flux')
-        macro_flx_name = os.path.join(out_flx_folder, '%s_%s_%s_flux_%i-%i.fits'\
+        if kwargs['foresub'] == True:
+            macro_flx_name = os.path.join(out_flx_folder, '%s_%s_%s_flux_%i-%i.fits'\
 									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
-        macro_flx_msk_name = os.path.join(out_flx_folder, '%s_%s_%s_fluxmasked_%i-%i.fits'\
+            macro_flx_msk_name = os.path.join(out_flx_folder, '%s_%s_%s_fluxmasked_%i-%i.fits'\
 									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
+        else:
+            macro_flx_name = os.path.join(out_flx_folder, '%s_%s_noforesub_flux_%i-%i.fits'\
+									%(out_label, mask_label, E_MIN, E_MAX))
+            macro_flx_msk_name = os.path.join(out_flx_folder, '%s_%s_noforesub_fluxmasked_%i-%i.fits'\
+									%(out_label, mask_label, E_MIN, E_MAX))
+            
         if not os.path.exists(out_flx_folder):
             os.makedirs(out_flx_folder)
         hp.write_map(macro_flx_name, time_ene_sum_flux_, overwrite=overwrite)
         hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked, overwrite=overwrite)
 
-        logger.info('Writing output file...')
-        if kwargs['foresub'] == True:
-            for i in range(len(FLUX_)):
-                outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%.2f\t%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\n' \
+    logger.info('Writing output file...')
+    if kwargs['foresub'] == True:
+        for i in range(len(FLUX_)):
+            outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%.2f\t%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\n' \
 						  %(E_MIN_[i], E_MAX_[i], E_MEAN_[i], FLUX_[i], FLUX_ERR_[i],
 						    CN_[i], FSKY_[i], fore_N_[i], fore_N_errsx_[i], fore_N_errdx_[i],
 						    fore_C_[i], fore_C_errsx_[i], fore_C_errdx_[i]))
-        else:
-            for i in range(len(FLUX_)):
-                outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%f\n' \
+    else:
+        for i in range(len(FLUX_)):
+            outfile.write('%.2f\t%.2f\t%.2f\t%.2e\t%.2e\t%.2e\t%f\n' \
 						  %(E_MIN_[i], E_MAX_[i], E_MEAN_[i], FLUX_[i], FLUX_ERR_[i],
 						  CN_[i], FSKY_[i]))
 
