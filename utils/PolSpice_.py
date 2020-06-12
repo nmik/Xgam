@@ -45,7 +45,7 @@ def new_binning(xmin, xmax, nbin=25, bin_type='lin', out_type=int, custom_bins=N
     elif type(custom_bins) == list or type(custom_bins) == np.ndarray:
         binning_ = np.array(custom_bins)
     else:
-        logger.info('ERROR: Invalid binning type. Choose lin or log.')
+        logger.info('ERROR: Invalid binning type. Choose lin or log or custom.')
         sys.exit()
 
     return binning_
@@ -288,32 +288,35 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
         pass
     pic.dump(_cov,
              open(pol_cov_out_file.replace('.fits', '.pkl'),'wb'))
+             
     if show==True:
-         _cov2ploti = []
-         for i in range(0, len(_l)):
-             sigii = _cov[i][i]
-             _cov2plotj = []
-             for j in range(0, len(_l)):
-                 sigjj = _cov[j][j]
-                 sigij = _cov[j][i]
-                 if sigij < 0:
-                     sigij = 1e-100
-                 _cov2plotj.append(np.sqrt(sigij/np.sqrt(sigii*sigjj)))
-             _cov2ploti.append(_cov2plotj)
-         _cov2ploti = np.array(_cov2ploti)
-         fig = plt.figure(facecolor='white')
-         ax = fig.add_subplot(111)
-         cax = ax.matshow(np.log10(np.abs(_cov)), origin='lower',
+    
+        _cov2ploti = []
+        for i in range(0, len(_l)):
+            sigii = _cov[i][i]
+            _cov2plotj = []
+            for j in range(0, len(_l)):
+                sigjj = _cov[j][j]
+                sigij = _cov[j][i]
+                if sigij < 0:
+                    sigij = 1e-100
+                _cov2plotj.append(np.sqrt(sigij/np.sqrt(sigii*sigjj)))
+            _cov2ploti.append(_cov2plotj)
+        _cov2ploti = np.array(_cov2ploti)
+        fig = plt.figure(facecolor='white')
+        ax = fig.add_subplot(111)
+        cax = ax.matshow(_cov2ploti, origin='lower',
                           aspect='auto', cmap='viridis')
-         #en_tick = list(np.logspace(0, np.log10(1500), 6).astype(int))
+        #en_tick = list(np.logspace(0, np.log10(1500), 6).astype(int))
          #ax.set_yticklabels(['']+en_tick)
          #ax.set_xticklabels(['']+en_tick)
-         plt.title('Covariance matrix')
-         plt.xlabel('$l_{i}$')
-         plt.ylabel('$l_{j}$')
-         cb = plt.colorbar(cax, format='$%i$')
-         plt.grid()
-         plt.show()
+        plt.title('$\sigma_{ij}/\sqrt{\sigma_{ii}\sigma_{jj}}$')
+        plt.xlabel('$l_{i}$')
+        plt.ylabel('$l_{j}$')
+        cb = plt.colorbar(cax, format='$%i$')
+        plt.grid()
+        plt.show()
+        
     return _cov
 
 def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, rebin=None, nbin=25, custom_bins=None, bin_type='lin', show=False):
