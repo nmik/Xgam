@@ -110,6 +110,7 @@ def mkCross(**kwargs):
             sys.exit()
         else:
             logger.info('ATT: Overwriting files!')
+            
     cl_txt = open(cl_txt_f, 'w')
 
     for i, m1_f in enumerate(fermi_maps_):
@@ -227,11 +228,11 @@ def mkCross(**kwargs):
                                                         nbin=bin_num, bin_type=bin_alg,
                                                         custom_bins=bin_custom, 
                                                         show=kwargs['show'])
-        
         cl_txt.write('multipole\t%s\n'%str(list(_l)).replace('[','').replace(']','').replace(', ', ' '))
         cl_txt.write('Cl\t%s\n'%str(list(_cl)).replace('[','').replace(']','').replace(', ', ' '))
-        cl_txt.write('Cl_ERR\t%s\n\n\n'%str(list(_cl_err)).replace('[','').replace(']','').replace(', ', ' '))
-         
+        cl_txt.write('Cl_ERR\t%s\n'%str(list(_cl_err)).replace('[','').replace(']','').replace(', ', ' '))
+        cl_txt.write('COV_FILE ---> %s\n\n\n'%(os.path.join(out_folder,'%s_%i_cov.pkl'%(out_label, i))))
+        
     cl_txt.close()
 
     logger.info('Created %s'%cl_txt_f)
