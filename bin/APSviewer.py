@@ -59,18 +59,18 @@ def aps_view(**kwargs):
         plt.plot([0, 2000], [0, 0], '--', color='silver')
         plt.errorbar(_l[i], cl, fmt='o', markersize=5, elinewidth=2, label=aps_label, 
                      color='red', yerr=_clerr[i])
-        plt.plot([40, 40], [-1e-11, 1e-11], ':', color='silver')
-        plt.plot([400, 400], [-1e-11, 1e-11], ':', color='silver')
+        plt.plot([40, 40], [-1e-10, 1e-10], ':', color='silver')
+        plt.plot([400, 400], [-1e-10, 1e-10], ':', color='silver')
         plt.xlim(10, 1500)
         plt.xscale('log')
         plt.xlabel('Multipole', size=15)
-        plt.ylabel('C$^{sig}_{\ell}$ [???]', size=15)
+        plt.ylabel('C$^{sig}_{\ell}$ [(cm$^{-2}$s$^{-1}$sr$^{-1}$)sr]', size=15)
         plt.title(kwargs['title'])
-        plt.ylim(-1e-11, 1e-11)
+        plt.ylim(-1e-10, 1e-10)
         plt.tight_layout()
         plt.legend(loc=1, fontsize=16)
         
-    logger.info('Generating Covariance marices plots...')
+    logger.info('Generating Covariance matrices plots...')
     for k, cov in enumerate(_cov_):
     
         _cov2plotij_ = []
@@ -93,6 +93,10 @@ def aps_view(**kwargs):
         plt.title(kwargs['title']+' (%.1f-%.1f GeV)'%(_emin[k]/1000, _emax[k]/1000))
         plt.xlabel('Multipole $\ell_{i}$', size=15)
         plt.ylabel('Multipole $\ell_{j}$', size=15)
+        l_sampling = int(np.round(len(_l[k])/len(ax.get_xticks())))
+        x_ticks = _l[k][::l_sampling].astype(int).astype(str)
+        ax.set_xticklabels(x_ticks, size=13)
+        ax.set_yticklabels(x_ticks, size=13)
         cbar = plt.colorbar(cax)
         cbar.set_label('$\sigma_{ij}/\sqrt{\sigma_{ii}\sigma_{jj}}$', size=15)
         #plt.tight_layout()
