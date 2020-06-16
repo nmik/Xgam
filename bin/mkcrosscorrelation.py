@@ -79,8 +79,11 @@ def mkCross(**kwargs):
     lss_masks_ = data.LSS_TRACER_MASK_LIST
     lss_wb_ = data.LSS_TRACER_WBEAM_LIST
     out_label = data.OUT_LABEL
+    bin_label = data.BINNING_LABEL
     gamma = data.GAMMA
     l_max = data.MAX_APS_MULTIPOLE
+    lmax = data.MAX_MULTIPOLE
+    lmin = data.MIN_MULTIPOLE
     bin_num = data.BINNING_MULTIPOLE_NBIN
     bin_alg = data.BINNING_MULTIPOLE_ALGORITHM
     bin_custom = data.BINNING_CUSTOM
@@ -102,7 +105,7 @@ def mkCross(**kwargs):
         lss_masks_ = lss_masks_.read().splitlines()
 
     logger.info('Starting Cross-Correlation analysis...')
-    cl_txt_f = os.path.join(X_OUT,'%s_crosscorrelation.txt'%out_label)
+    cl_txt_f = os.path.join(X_OUT,'%s_%s_crosscorrelation.txt'%(out_label, bin_label))
     if os.path.exists(cl_txt_f):
         logger.info('ATT: Output file already exists!')
         logger.info(cl_txt_f)
@@ -177,6 +180,7 @@ def mkCross(**kwargs):
         if lss_wb_ is not None:
             logger.info('Getting the LSS beam window function ...')
             lss_wb = np.ones(len(wb))
+            
         cl_txt.write('MAP1 ---> %s\n'%(m1_f))
         cl_txt.write('MAP2 ---> %s\n'%(m2_f))
         cl_txt.write('ENERGY\t %.2f %.2f \n'%(emin, emax))
@@ -214,18 +218,20 @@ def mkCross(**kwargs):
             logger.info('Retrivnig APS and Covariance matrix ...')
             _l, _cl, _cl_err = pol_cl_parse(os.path.join(out_folder,'%s_%i_cl.txt'%(out_label, i)),
                                             os.path.join(out_folder,'%s_%i_cov.fits'%(out_label, i)),
-                                            wl_array = wl, rebin=True,
+                                            wl_array = wl, rebin=True, lmin=lmin, lmax=lmax,
                                             nbin=bin_num, bin_type=bin_alg,
                                             custom_bins=bin_custom, show=kwargs['show'])
             _cov = pol_cov_parse(os.path.join(out_folder,'%s_%i_cov.fits'%(out_label, i)),
                                               wl_array = wl, rebin=True,
                                               nbin=bin_num, bin_type=bin_alg,
+                                              lmin=lmin, lmax=lmax,
                                               custom_bins=bin_custom, 
                                               show=kwargs['show'])                      
         else:
             _l, _cl, _cl_err, _cov = pol_cl_calculation(pol_dict, config_file_name, 
                                                         wl_array=wl, rebin=True,
                                                         nbin=bin_num, bin_type=bin_alg,
+                                                        lmin=lmin, lmax=lmax,
                                                         custom_bins=bin_custom, 
                                                         show=kwargs['show'])
         cl_txt.write('multipole\t%s\n'%str(list(_l)).replace('[','').replace(']','').replace(', ', ' '))
