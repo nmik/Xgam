@@ -36,9 +36,10 @@ PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
 PARSER.add_argument('-f', '--infile', type=str, required=True,
                     help='input fits file')
-PARSER.add_argument('--title', type=str, default='UGRB Energy Spectrum', 
-                    help='map title')
-
+PARSER.add_argument('--title', type=str, default='Cross-correlation', 
+                    help='Plot title')
+PARSER.add_argument('--xscale', type=str, choices=['log', 'linear'], default='linear', 
+                    help='x-axis scale')
 
 def aps_view(**kwargs):
     """
@@ -52,6 +53,12 @@ def aps_view(**kwargs):
 	
     logger.info('Generating APS plots...')
     for i, cl in enumerate(_cl):
+    
+        sig = cl/_clerr[i]
+        print('-----------------------')
+        print('Detection Significance:')
+        print(sig)
+        print('-----------------------')
 	    
         aps_label = '%.1f-%.1f GeV'%(_emin[i]/1000, _emax[i]/1000)
         fig = plt.figure()
@@ -59,14 +66,11 @@ def aps_view(**kwargs):
         plt.plot([0, 2000], [0, 0], '--', color='silver')
         plt.errorbar(_l[i], cl, fmt='o', markersize=5, elinewidth=2, label=aps_label, 
                      color='red', yerr=_clerr[i])
-        plt.plot([40, 40], [-1e-10, 1e-10], ':', color='silver')
-        plt.plot([400, 400], [-1e-10, 1e-10], ':', color='silver')
-        plt.xlim(10, 1500)
-        plt.xscale('log')
+        plt.xlim(np.amin(_l[i])-1, np.amax(_l[i])+1)
+        plt.xscale(kwargs['xscale'])
         plt.xlabel('Multipole', size=15)
         plt.ylabel('C$^{sig}_{\ell}$ [(cm$^{-2}$s$^{-1}$sr$^{-1}$)sr]', size=15)
         plt.title(kwargs['title'])
-        plt.ylim(-1e-10, 1e-10)
         plt.tight_layout()
         plt.legend(loc=1, fontsize=16)
         
