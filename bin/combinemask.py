@@ -53,6 +53,7 @@ def combinemasks(**kwargs):
         combmask *= m
         
     hp.write_map(os.path.join(X_OUT, 'fits/MaskCombo_%s.fits'%kwargs['outflabel']), combmask)
+    logger.info('Created %s'%os.path.join(X_OUT, 'fits/MaskCombo_%s.fits'%kwargs['outflabel']))
 
     if kwargs['show'] == True:
     
