@@ -54,8 +54,11 @@ def parse_polspice_aps(cl_file):
             clerrs.append(cl_err)
         if 'COV_FILE' in line:
             cov_f = line.split()[-1]
-            cov = np.load(cov_f, allow_pickle=True)
-            _cov_.append(cov)
+            try:
+                cov = np.load(cov_f, allow_pickle=True)
+                _cov_.append(cov)
+            except:
+                pass
     f.close()
     return [np.array(emin),np.array(emax), np.array(ls), np.array(cls), \
                                                   np.array(clerrs), np.array(_cov_)]
