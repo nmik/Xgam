@@ -39,15 +39,18 @@ def new_binning(xmin, xmax, nbin=25, bin_type='lin', out_type=int, custom_bins=N
 	   the array with the edges of the new binning
     """
     if bin_type == 'lin' and custom_bins is None:
-        binning_ = np.linspace(xmin, xmax, num=nbin, dtype=out_type)
+        binning_ = np.linspace(xmin, xmax, num=nbin+1, dtype=out_type)
     elif bin_type == 'log' and custom_bins is None:
-        binning_ = np.logspace(np.log10(xmin), np.log10(xmax), num=nbin, dtype=out_type)
+        if xmin == 0:
+            xmin = 1
+        binning_ = np.logspace(np.log10(xmin), np.log10(xmax), num=nbin+1, dtype=out_type)
     elif type(custom_bins) == list or type(custom_bins) == np.ndarray:
         binning_ = np.array(custom_bins)
     else:
-        logger.info('ERROR: Invalid binning type. Choose lin or log or custom.')
+        logger.info('ERROR: Invalid binning type. Choose lin or log, or customize it.')
         sys.exit()
-
+        
+    logger.info('Multipole binning:%s'%str(binning_))
     return binning_
 
 def pol_ccf_parse(pol_ccf_out_file, pol_cov_out_file, rebin=None, pol='circular'):
@@ -146,7 +149,8 @@ def pol_run(config_file):
 
     return 0
 
-def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type='lin', custom_bins=None, show=False):
+def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, nbin=25, 
+                        lmin=1, lmax=1500, bin_type='lin', custom_bins=None, show=False):
     """
     Parser of the txt output file of PolSpice, which contains the angular power spectrum (APS).
 
@@ -201,14 +205,17 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, n
         _lr, _clr, _clerrr = [], [], []
         if custom_bins is not None:
             logger.info('Custom multipole binning.')
-            rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type, custom_bins=custom_bins)  
+            rebinning = new_binning(lmin, lmax, nbin, bin_type=bin_type, custom_bins=custom_bins)  
         else:
-            rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type)
+            rebinning = new_binning(lmin, lmax, nbin, bin_type=bin_type)
         for bmin, bmax in zip(rebinning[:-1], rebinning[1:]):
             logger.info('considering %i < li < %i'%(bmin,bmax))
             _index = np.where(np.logical_and(_l>=bmin, _l<bmax))[0]
             _index = _index.astype(int)
-            _lmean = np.sqrt(bmin*bmax)
+            if bin_type=='log':
+                _lmean = np.sqrt(bmin*bmax)
+            if bin_type=='lin':
+                _lmean = (bmin+bmax)/2
             _lr.append(_lmean)
             _clmean = np.mean(_cl[_index])
             _clerr = np.mean(_cov[bmin:bmax,bmin:bmax])
@@ -234,7 +241,8 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, n
      
     return np.array(_l), np.array(_cl),  np.array(_clerr)
 
-def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type='lin', custom_bins=None, show=False):
+def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type='lin', 
+                  lmin=1, lmax=1500, custom_bins=None, show=False):
     """
     Parser of the fits output file of PolSpice containing the covariance
     matrix of the angular power spectra (APS).
@@ -271,13 +279,16 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
         _covr = []
         _lr = []
         if custom_bins is None:
-            rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type)
+            rebinning = new_binning(lmin, lmax, nbin, bin_type=bin_type)
         else:
-            rebinning = new_binning(_l[0], _l[-1], nbin, bin_type=bin_type, custom_bins=custom_bins)  
+            rebinning = new_binning(lmin, lmax, nbin, bin_type=bin_type, custom_bins=custom_bins)  
         for imin, imax in zip(rebinning[:-1], rebinning[1:]):
             _imean = np.sqrt(imin*imax)
             _covrj = []
-            _lmean = np.sqrt(imin*imax)
+            if bin_type=='log':
+                _lmean = np.sqrt(imin*imax)
+            if bin_type=='lin':
+                _lmean = (imin+imax)/2
             _lr.append(_lmean)
             for jmin, jmax in zip(rebinning[:-1], rebinning[1:]):
                  _covrj.append(np.mean(_cov[imin:imax, jmin:jmax]))
@@ -319,7 +330,8 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
         
     return _cov
 
-def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, rebin=None, nbin=25, custom_bins=None, bin_type='lin', show=False):
+def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, rebin=None, lmin=1, 
+                      lmax=1500, nbin=25, custom_bins=None, bin_type='lin', show=False):
     """
     Creates and runs the PolSpice config file, and returns the arrays of
     1) the multipoles (rebinned or not); 2) the Cl corresponding to the
@@ -355,18 +367,22 @@ def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, rebin=None, nb
     nb = nbin
     bt = bin_type
     cbins = custom_bins
+    lm, lM = lmin, lmax
     pol_cl_out_file = pol_dict['clfile']
     pol_cov_out_file = pol_dict['covfileout']
     config_file = pol_create_config(pol_dict, config_file_name)
     pol_run(config_file)
     
     if custom_bins is None:
-        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=wl, rebin=r, nbin=nb, bin_type=bt)
-        _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, rebin=r,  nbin=nb, bin_type=bt, show=s)
+        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=wl, 
+                                         rebin=r, nbin=nb, lmin=lm, lmax=lM, bin_type=bt)
+        _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, lmin=lm, lmax=lM, rebin=r,  
+                                                            nbin=nb, bin_type=bt, show=s)
     else:
-        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file,
-                                  wl_array=wl, rebin=r, nbin=nb, bin_type=bt, custom_bins=cbins)  
-        _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, rebin=r,  nbin=nb, bin_type=bt,  custom_bins=cbins, show=s)                           
+        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, lmin=lm, lmax=lM,
+                            wl_array=wl, rebin=r, nbin=nb, bin_type=bt, custom_bins=cbins)  
+        _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, rebin=r, lmin=lm, lmax=lM,
+                                        nbin=nb, bin_type=bt,  custom_bins=cbins, show=s)                           
     
     return _l, _cl, _clerr, _cov
 
