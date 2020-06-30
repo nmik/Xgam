@@ -1,11 +1,9 @@
-
 #!/usr/bin/env python                                                          #
 #                                                                              #
-# Autor: Michela Negro, University of Torino.                                  #
-# On behalf of the Fermi-LAT Collaboration.                                    #
+# Autor: Michela Negro, GSFC/CRESST/UMBC    .                                  #
 #                                                                              #
 # This program is free software; you can redistribute it and/or modify         #
-# it under the terms of the GNU GengReral Public License as published by       #
+# it under the terms of the GNU General Public License as published by         #
 # the Free Software Foundation; either version 3 of the License, or            #
 # (at your option) any later version.                                          #
 #                                                                              #
@@ -92,15 +90,12 @@ def aps_view(**kwargs):
     
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        cax = ax.matshow(_cov2plotij_, origin='lower', aspect='auto', cmap='viridis')
+        cax = ax.matshow(_cov2plotij_, origin='lower', aspect='auto', cmap='viridis', 
+                         extent=[_l[k][0], _l[k][-1], _l[k][0], _l[k][-1]])
         ax.xaxis.set_ticks_position('bottom')
         plt.title(kwargs['title']+' (%.1f-%.1f GeV)'%(_emin[k]/1000, _emax[k]/1000))
         plt.xlabel('Multipole $\ell_{i}$', size=15)
         plt.ylabel('Multipole $\ell_{j}$', size=15)
-        l_sampling = int(np.round(len(_l[k])/len(ax.get_xticks())))
-        x_ticks = _l[k][::l_sampling].astype(int).astype(str)
-        ax.set_xticklabels(x_ticks, size=13)
-        ax.set_yticklabels(x_ticks, size=13)
         cbar = plt.colorbar(cax)
         cbar.set_label('$\sigma_{ij}/\sqrt{\sigma_{ii}\sigma_{jj}}$', size=15)
         #plt.tight_layout()
