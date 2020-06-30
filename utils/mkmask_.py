@@ -15,11 +15,11 @@ import numpy as np
 import healpy as hp
 from scipy.integrate import quad
 from astropy.io import fits as pf
-from Xgam.utils.logging_ import logger
-import matplotlib as mpl
-mpl.use('Agg')
 import matplotlib.pyplot as plt
-from Xgam.utils.matplotlib_ import *
+
+from Xgam.utils.logging_ import logger
+
+
 
 def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
     """Returns the 'bad pixels' defined by the position of a source and a
@@ -54,20 +54,20 @@ def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
     src_cat.close()
     return BAD_PIX_SRC
 
-def mask_extsrc(CAT_FILE, MASK_S_RAD, NSIDE):
+def mask_extsrc(CAT_FILE, nside=512):
     """Returns the 'bad pixels' defined by the position of a source and a
        certain radius away from that point.
 
        cat_file: str
            .fits file of the sorce catalog
-       MASK_S_RAD: float
+       mask_rad: float
            radius around each source definig bad pixels to mask
-       NSIDE: int
+       nside: int
            healpix nside parameter
     """
     logger.info('Mask for extended sources activated')
     src_cat = pf.open(CAT_FILE)
-    NPIX = hp.pixelfunc.nside2npix(NSIDE)
+    NPIX = hp.pixelfunc.nside2npix(nside)
     CAT_EXTENDED = src_cat['ExtendedSources']
     BAD_PIX_SRC = []
     EXT_SOURCES = CAT_EXTENDED.data
@@ -79,37 +79,41 @@ def mask_extsrc(CAT_FILE, MASK_S_RAD, NSIDE):
         if 'LMC' in NAME or 'CenA Lobes' in NAME:
         	logger.info('Masking %s with 10 deg radius disk...'%NAME)
         	x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
-        	b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+        	b_pix= hp.pixelfunc.vec2pix(nside, x, y, z)
         	BAD_PIX_SRC.append(b_pix)
-        	radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(10))
+        	radintpix = hp.query_disc(nside, (x, y, z), np.radians(10))
         	BAD_PIX_SRC.extend(radintpix)
         else:
         	logger.info('Masking %s with 5 deg radius disk...'%NAME)
         	x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
-        	b_pix = hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+        	b_pix = hp.pixelfunc.vec2pix(nside, x, y, z)
         	BAD_PIX_SRC.append(b_pix)
-        	radintpix = hp.query_disc(NSIDE, (x, y, z), np.radians(5))
+        	radintpix = hp.query_disc(nside, (x, y, z), np.radians(5))
         	BAD_PIX_SRC.extend(radintpix)
     return BAD_PIX_SRC
 
-def mask_gp(MASK_GP_LAT, NSIDE):
-    """Returns the 'bad pixels' around the galactic plain .
-
-       MASK_GP_LAT: float
-           absolute value of galactic latitude definig bad pixels to mask
-       NSIDE: int
-           healpix nside parameter
+def mask_gp(latitude_cut, nside):
     """
-    logger.info('Mask for the galactic plane activated')
-    NPIX = hp.pixelfunc.nside2npix(NSIDE)
-    BAD_PIX_GP = []
-    iii = range(NPIX)
-    x,y,z = hp.pix2vec(NSIDE,iii)
-    lon,lat = hp.rotator.vec2dir(x,y,z,lonlat=True)
-    for i,b in enumerate(lat):
-        if abs(b) <= MASK_GP_LAT:
-            BAD_PIX_GP.append(iii[i])
-    return BAD_PIX_GP
+    Returns the 'bad pixels' around the galactic plain .
+
+       
+    latitude_cut: float
+        absolute value of galactic latitude definig bad pixels to mask
+    nside: int
+        healpix nside parameter (power of 2)
+        
+    """
+
+    npix = hp.nside2npix(nside)
+    
+    iii = np.arange(npix)
+    x, y, z = hp.pix2vec(nside, iii)
+    lon, lat = hp.rotator.vec2dir(x, y, z, lonlat=True)
+    
+    filter_lat = (abs(lat) < latitude_cut)   
+    bad_pix_idx = iii[filter_lat]
+
+    return list(bad_pix_idx)
 
 def mask_src_fluxPSFweighted_1(CAT_FILE, CAT_EXT_FILE, PSF_SPLINE, ENERGY, NSIDE, APODIZE=False):
     """Returns the 'bad pixels' defined by the position of a source and a
