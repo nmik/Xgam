@@ -17,6 +17,7 @@ from numba import jit
 import astropy.io.fits as pf
 from itertools import product
 from scipy.special import factorial
+from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 
 from Xgam import X_OUT
@@ -322,12 +323,12 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
     igrb_sxerr, igrb_dxerr = get_param_error(prof_lh_igrb, cc, lh_delta=2.3)
     logger.info('Igrb err: %.2e - %.2e'%(igrb_sxerr, igrb_dxerr))
     
-    norm_list = np.linspace(norm_min-0.3, norm_min+0.3, 100)
-    igrb_list = np.linspace(igrb_min*0.1, igrb_min*10, 200)
 
     """
     logger.info('-------------------------------')
     logger.info('Minimization likelihood run2...')
+    norm_list = np.linspace(norm_min-0.3, norm_min+0.3, 100)
+    igrb_list = np.linspace(igrb_min*0.1, igrb_min*10, 200)
     lh_list = []
     combinations = np.array(list(product(norm_list, igrb_list)))
     if exp is not None:
@@ -388,48 +389,30 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
         plt.ylim(lh_min-5, lh_min+30)
         plt.xlim(igrb_min*0.9, igrb_min*1.1)
         plt.xscale('log')
+        
         """
-        igrb = np.array([x[1] for x in combinations])
-        plt.figure(facecolor='white')
-        plt.plot(igrb, lh_list, 'o', color='coral', alpha=0.3)
-        plt.plot(igrb_min, lh_list[lh_min] , 'r*')
-        plt.plot([np.amin(_igrb), np.amax(_igrb)], [lh_delta, lh_delta], 'r-')
-        plt.xlabel('Constant')
-        plt.ylabel('-Log(Likelihood)')
-
         fig = plt.figure(facecolor='white')
-        z = lh_list
-        zmin = lh_list[lh_min]
-        z.shape = (len(norm_list), len(igrb_list))
         ax = fig.add_subplot(111)
-        cax = ax.matshow(z, origin='lower', cmap='Spectral',
-                    aspect='auto')
-        plt.xlabel('C [cm$^{-2}$s$^{-1}$sr$^{-1}$]')
-        plt.ylabel('N')
-        x_ticks = np.linspace(np.amin(igrb_list), np.amax(igrb_list), 6)
-        formatting_function = np.vectorize(lambda f: format(f, '6.1E'))
-        x_ticks = list(formatting_function(x_ticks))
-        y_ticks = list(np.around(np.linspace(np.amin(norm_list),
-                                             np.amax(norm_list), 6),
-                                 decimals=3))
-        ax.set_yticklabels(['']+y_ticks)
-        ax.set_xticklabels(['']+x_ticks)
+        
+        x, y = np.mgrid(norm_list, igrb_list)
+        X, Y = np.mgrid(nn, cc)
+        print('---------------', lh_matrix.shape, X.shape, Y.shape)
+        print('---------------', lh_matrix.shape, x.shape, y.shape)
+        Z = griddata((x, y), lh_matrix, (X, Y), method='linear')
+
+
+        contours = plt.contour(X, Y, Z, 20, colors='0.4')
+        cax = ax.matshow(Z, origin='lower', cmap='RdGy',
+                         extent=[np.amin(norm_list), np.amax(norm_list), 
+                                np.amin(igrb_list), np.amax(igrb_list)], 
+                         aspect='auto', alpha=0.5)
+        plt.clabel(contours, inline=True, fontsize=8)
+        plt.ylabel('C [cm$^{-2}$s$^{-1}$sr$^{-1}$]')
+        plt.xlabel('N')
         ax.xaxis.set_ticks_position('bottom')
         plt.grid('off')
         cb = plt.colorbar(cax, format='$%.1e$')
         cb.set_label('-Log(Likelihood)', rotation=90)
-        norm_min_ind = list(norm_list).index(norm_min)
-        igrb_min_ind = list(igrb_list).index(igrb_min)
-        _norm_ind = []
-        _igrb_ind = []
-        for i in range(0, len(index)):
-            _norm_ind.append(list(norm_list).index(_norm[i]))
-            _igrb_ind.append(list(igrb_list).index(_igrb[i]))
-        _norm_ind = np.array(_norm_ind)
-        _igrb_ind = np.array(_igrb_ind)
-        plt.contourf(z, [zmin, zmin+2.3, zmin+4.61, zmin+5.99],
-                     colors='w', origin='lower', alpha=0.3)
-        plt.show()
         """
         plt.show()
         
