@@ -34,7 +34,7 @@ PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
 PARSER.add_argument('-f', '--infile', type=str, required=True,
                     help='input fits file')
-PARSER.add_argument('--title', type=str, default='UGRB Energy Spectrum', 
+PARSER.add_argument('--title', type=str, default=' ', 
                     help='map title')
 
 
