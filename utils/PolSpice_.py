@@ -316,11 +316,9 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
         _cov2ploti = np.array(_cov2ploti)
         fig = plt.figure(facecolor='white')
         ax = fig.add_subplot(111)
-        cax = ax.matshow(_cov2ploti, origin='lower',
-                          aspect='auto', cmap='viridis')
-        #en_tick = list(np.logspace(0, np.log10(1500), 6).astype(int))
-         #ax.set_yticklabels(['']+en_tick)
-         #ax.set_xticklabels(['']+en_tick)
+        cax = ax.matshow(_cov2ploti, origin='lower', 
+                        extent=[_l[0], _l[-1], _l[0], _l[-1]], 
+                        aspect='auto', cmap='viridis')
         plt.title('$\sigma_{ij}/\sqrt{\sigma_{ii}\sigma_{jj}}$')
         plt.xlabel('$l_{i}$')
         plt.ylabel('$l_{j}$')
