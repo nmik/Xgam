@@ -196,10 +196,10 @@ def mkSmartMask(**kwargs):
             hp.write_map(out_name, mask, coord='G', overwrite=True)
             logger.info('Created %s \n' %out_name)
 
-            if kwargs['show'] == True:
-                import matplotlib.pyplot as plt
-                hp.mollview(mask, cmap='bone')
-                plt.show()
+        if kwargs['show'] == True:
+            import matplotlib.pyplot as plt
+            hp.mollview(mask, cmap='bone')
+            plt.show()
 
     logger.info('Writing list of output files: %s'%out_name_list)
     np.savetxt(out_name_list, out_list, fmt='%s')
