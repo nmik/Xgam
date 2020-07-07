@@ -278,8 +278,7 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
         mask[np.where(mask==np.amax(mask))[0]] = 1
     logger.info('down grade...')
     fore_repix = np.array(hp.ud_grade(fore_map, nside_out=nside_out))
-    data_repix = np.array(hp.ud_grade(data_map, nside_out=nside_out,
-                                      power=-2))
+    data_repix = np.array(hp.ud_grade(data_map, nside_out=nside_out, power=-2))
     _unmask = np.where(mask > 1e-30)[0]
 
     norm_list = np.linspace(norm_guess-0.8, norm_guess+0.8, 200)
