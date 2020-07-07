@@ -82,8 +82,8 @@ def mkCross(**kwargs):
     bin_label = data.BINNING_LABEL
     gamma = data.GAMMA
     l_max = data.MAX_APS_MULTIPOLE
-    lmax = data.MAX_MULTIPOLE
-    lmin = data.MIN_MULTIPOLE
+    lmax = data.BINNING_MAX_MULTIPOLE
+    lmin = data.BINNING_MIN_MULTIPOLE
     bin_num = data.BINNING_MULTIPOLE_NBIN
     bin_alg = data.BINNING_MULTIPOLE_ALGORITHM
     bin_custom = data.BINNING_CUSTOM
