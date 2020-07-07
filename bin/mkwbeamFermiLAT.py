@@ -16,7 +16,6 @@
 
 
 import os
-import imp
 import ast
 import argparse
 import numpy as np
