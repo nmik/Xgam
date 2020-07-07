@@ -41,10 +41,13 @@ LSS_TRACER_WBEAM_LIST = [ ]
 # ----> APS parameters
 
 MAX_APS_MULTIPOLE = 1500
-BINNING_MULTIPOLE_MIN = 0
-BINNING_MULTIPOLE_MAX = 1500
-BINNING_ALGORITHM = 'lin'  #'lin' or 'log'
+BINNING_MIN_MULTIPOLE = 0
+BINNING_MAX_MULTIPOLE = 1500
+BINNING_MULTIPOLE_NBIN = 21
+BINNING_MULTIPOLE_ALGORITHM = 'lin'  #'lin' or 'log'
 BINNING_CUSTOM = None #None or list. If a list, previous parameters are neglected.
+BINNING_LABEL = '20bins'
+
 
 # ----> PolSpice dictionary 
 
