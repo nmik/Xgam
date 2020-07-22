@@ -81,7 +81,7 @@ RUN git clone https://github.com/nmik/Xgam.git
 RUN echo "echo 'Setting Xgam environment...'" > /root/.bashrc \
 #   && echo "export PATH=/run_xgam/anaconda2/envs/fermi/bin:$PATH" >> /root/.bashrc \
 #   && echo "export PATH=/run_xgam/anaconda3/envs/fermi/bin:$PATH" >> /root/.bashrc \
-#   && echo "export PYTHONPATH=:/run_xgam/:${PYTHONPATH}" >> /root/.bashrc \
+   && echo "export PYTHONPATH=:/run_xgam/:${PYTHONPATH}" >> /root/.bashrc \
    && echo "export PATH=/run_xgam/Xgam/bin:${PATH}" >> /root/.bashrc \
    && echo "export P8_DATA=/run_xgam/home/" >> /root/.bashrc \
    && echo "export X_OUT=/run_xgam/home/" >> /root/.bashrc \
