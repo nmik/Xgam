@@ -38,13 +38,20 @@ RUN cmake .. -DCFITSIO=/cfitsio_latest/lib -DHEALPIX=/Healpix_latest
 RUN make && make clean
 RUN /Polspice/bin/spice -help
 
+RUN  mkdir /run_xgam/ && mkdir /run_xgam/home/
 WORKDIR /tmp
-RUN curl -O https://repo.anaconda.com/miniconda/Miniconda2-latest-Linux-x86_64.sh
-RUN mkdir /archive/ && mkdir /archive/home/ && mkdir /archive/home/sammazza/ && mkdir /archive/home/sammazza/fermi_data/ && mkdir /run_xgam/
 
-# Install Anaconda2
-RUN bash Miniconda2-latest-Linux-x86_64.sh -b -p /run_xgam/anaconda2
-ENV PATH /run_xgam/anaconda2/bin:$PATH
+## Install Anaconda2
+#RUN curl -O https://repo.anaconda.com/miniconda/Miniconda2-latest-Linux-x86_64.sh
+#RUN bash Miniconda2-latest-Linux-x86_64.sh -b -p /run_xgam/anaconda2
+#ENV PATH /run_xgam/anaconda2/bin:$PATH
+#RUN rm -r *.sh
+
+# Install Anaconda3
+RUN curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /run_xgam/anaconda3
+ENV PATH /run_xgam/anaconda3/bin:$PATH
+RUN rm -r *.sh
 
 # Install healpy and fermitools
 RUN conda update -n base -c defaults conda
@@ -55,26 +62,43 @@ RUN conda install -y --name fermi healpy numba
 RUN apt-get update && apt-get install -y libgl1-mesa-dev
 # Clone Xgam
 WORKDIR /run_xgam
-#RUN ls -lh
 RUN git clone https://github.com/nmik/Xgam.git
-#RUN ls /run_xgam/Xgam/bin -lh
 
-# Creating bashrc file
-RUN echo "echo 'Setting Xgam environment...'" > /run_xgam/.bashrc \
-#RUN echo "export PATH=/run_xgam/anaconda2/bin:$PATH" >> /run_xgam/.bashrc \
-   && echo "export PATH=/run_xgam/anaconda2/envs/fermi/bin:$PATH" >> /run_xgam/.bashrc \
-   && echo "export PYTHONPATH=:/run_xgam/:${PYTHONPATH}" >> /run_xgam/.bashrc \
-   && echo "export PATH=/run_xgam/Xgam/bin:${PATH}" >> /run_xgam/.bashrc \
-   && echo "export P8_DATA=/archive/home/sammazza/fermi_data" >> /run_xgam/.bashrc \
-   && echo "export X_OUT=/archive/home/sammazza/fermi_data" >> /run_xgam/.bashrc \
-   && echo "export X_OUT_FIG=/archive/home/sammazza/fermi_data" >> /run_xgam/.bashrc \
-   && echo "source activate fermi" >> /run_xgam/.bashrc \
-   && echo "export HEALPIX=/Healpix_latest" >> /run_xgam/.bashrc \
-   && echo "echo 'Done.'" >> /run_xgam/.bashrc \
-RUN echo "bashrc file:" && less /run_xgam/.bashrc
+## Creating bashrc file
+#RUN echo "echo 'Setting Xgam environment...'" > /run_xgam/.bashrc \
+##   && echo "export PATH=/run_xgam/anaconda2/envs/fermi/bin:$PATH" >> /run_xgam/.bashrc \
+##   && echo "export PATH=/run_xgam/anaconda3/envs/fermi/bin:$PATH" >> /run_xgam/.bashrc \
+##   && echo "export PYTHONPATH=:/run_xgam/:${PYTHONPATH}" >> /run_xgam/.bashrc \
+#   && echo "export PATH=/run_xgam/Xgam/bin:${PATH}" >> /run_xgam/.bashrc \
+#   && echo "export P8_DATA=/run_xgam/home/" >> /run_xgam/.bashrc \
+#   && echo "export X_OUT=/run_xgam/home/" >> /run_xgam/.bashrc \
+#   && echo "export X_OUT_FIG=/run_xgam/home/" >> /run_xgam/.bashrc \
+#   && echo "source activate fermi" >> /run_xgam/.bashrc \
+#   && echo "export HEALPIX=/Healpix_latest" >> /run_xgam/.bashrc \
+#   && echo "echo 'Done.'" >> /run_xgam/.bashrc
+#RUN echo "bashrc file:" && less /run_xgam/.bashrc
 
-WORKDIR /archive/home/sammazza/fermi_data
-RUN mkdir /home/simone/
+RUN echo "echo 'Setting Xgam environment...'" > /root/.bashrc \
+#   && echo "export PATH=/run_xgam/anaconda2/envs/fermi/bin:$PATH" >> /root/.bashrc \
+#   && echo "export PATH=/run_xgam/anaconda3/envs/fermi/bin:$PATH" >> /root/.bashrc \
+#   && echo "export PYTHONPATH=:/run_xgam/:${PYTHONPATH}" >> /root/.bashrc \
+   && echo "export PATH=/run_xgam/Xgam/bin:${PATH}" >> /root/.bashrc \
+   && echo "export P8_DATA=/run_xgam/home/" >> /root/.bashrc \
+   && echo "export X_OUT=/run_xgam/home/" >> /root/.bashrc \
+   && echo "export X_OUT_FIG=/run_xgam/home/" >> /root/.bashrc \
+   && echo "source activate fermi" >> /root/.bashrc \
+   && echo "export HEALPIX=/Healpix_latest" >> /root/.bashrc \
+   && echo "echo 'Done.'" >> /root/.bashrc \
+   && echo "echo '*** WELCOME MESSAGE ***'" >> /root/.bashrc
+RUN echo "bashrc file:" && less /root/.bashrc
+
+#COPY bin/mksmartmask.py /run_xgam/Xgam/bin/mksmartmask.py
+#COPY bin/mkdatafluxmaps.py /run_xgam/Xgam/bin/mkdatafluxmaps.py
+#COPY utils/foregroundfit_local.py /run_xgam/Xgam/utils/foregroundfit_.py
+
+RUN rm -f /cfitsio_latest.tar.gz /PolSpice/PolSpice.tar.gz /cfitsio/Healpix_latest.zip
+WORKDIR /run_xgam/home/
+
 # Define entrypoint and default values for args
-CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /archive/home/sammazza/fermi_data/bash_script.sh"]
-#CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /home/simone/bash_script.sh"]
+#CMD ["/bin/bash","-c","source /run_xgam/.bashrc && /archive/home/sammazza/fermi_data/bash_script.sh"]
+CMD ["/bin/bash"]
