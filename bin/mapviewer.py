@@ -39,6 +39,8 @@ PARSER.add_argument('--udgrade', type=int, default=512,
                     help='apply a up or under grade of the nside')
 PARSER.add_argument('--norm', type=str, choices=['lin', 'log','hist','optimized'],
                     default='lin', help='specify the scale of the z axis')
+PARSER.add_argument('--flip', type=str, choices=['astro', 'geo'],
+                    default='astro', help='specify the flip of the projection')
 PARSER.add_argument('--coord', type=str, choices=['G','E','C'], default='G',  nargs='*',
 					help='Define the coord sys. If two agrs are provided then converts'+
 					'the coordinates from the firsts to the seconds.')
@@ -81,7 +83,7 @@ def maps_view(**kwargs):
         healpix_map = hp.pixelfunc.ud_grade(healpix_maps, nside_out, pess=True)
     else:
     	healpix_map = hp.pixelfunc.ud_grade(healpix_maps, nside_out, pess=True, power=-2)
-    hp.mollview(healpix_map, title=TITLE, norm=NORM, coord=COORD, flip='geo', 
+    hp.mollview(healpix_map, title=TITLE, norm=NORM, coord=COORD, flip=kwargs['flip'], 
     					  min=MINVAL, max=MAXVAL, cmap=CMAP, unit=UNIT)
     if kwargs['save'] == True:
     	if not os.path.exists(os.path.join(X_OUT, 'figs')):
