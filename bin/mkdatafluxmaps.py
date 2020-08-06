@@ -309,9 +309,12 @@ def mkRestyle(**kwargs):
             os.makedirs(out_fore_folder)
             
         if kwargs['foresub'] == True:
-            macro_fore_name = os.path.join(out_fore_folder, '%s_%s_%s_foresub_%i-%i.fits'\
-									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
+            macro_fore_name = os.path.join(out_fore_folder, '%s_%s_%s_foresub_%i-%i.fits'
+                                    %(out_label, mask_label, fore_label, E_MIN, E_MAX))
+            macro_forecnt_name = os.path.join(out_fore_folder, '%s_%s_%s_foresubcnt_%i-%i.fits'
+			                        %(out_label, mask_label, fore_label, E_MIN, E_MAX))
             hp.write_map(macro_fore_name, time_ene_sum_fore_, overwrite=overwrite)
+            hp.write_map(macro_forecnt_name, time_ene_sum_forecnt_, overwrite=overwrite)
             macro_cnt_name = os.path.join(out_cnt_folder, '%s_%s_%s_counts_%i-%i.fits'\
 									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
             macro_flx_name = os.path.join(out_flx_folder, '%s_%s_%s_flux_%i-%i.fits'\
