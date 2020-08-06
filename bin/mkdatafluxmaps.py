@@ -202,7 +202,7 @@ def mkRestyle(**kwargs):
             from Xgam.utils.foregroundfit_ import fit_foreground_poisson
             from Xgam.utils.foregroundfit_ import get_fore_integral_flux_map
 
-            micro_fore_map_, micro_CN_ = [], []
+            micro_fore_map_, micro_forecnt_map_, micro_CN_ = [], [], []
             micro_fore_N_, micro_fore_N_errsx_, micro_fore_N_errdx_ = [], [], []
             micro_fore_C_, micro_fore_C_errsx_, micro_fore_C_errdx_ = [], [], []
             logger.info('perfom the fit in each micro enrgy bin...')
@@ -267,12 +267,18 @@ def mkRestyle(**kwargs):
                     micro_count_forsesub = time_sum_cnt_[b] - fore_norm_count
                     micro_sqrtcount_forsesub = np.sqrt(micro_count_forsesub)
                     micro_fluxerr_forsesub = micro_sqrtcount_forsesub/time_sum_exp_[b]/sr
+                micro_forecnt_map_.append(fore_norm_count)
                 micro_cnt_foresub_map_.append(micro_count_forsesub)
                 micro_flx_foresub_map_.append(micro_flux_forsesub)
                 micro_flxerr_foresub_map_.append(micro_fluxerr_forsesub)
             time_sum_cnt_ = np.array(micro_cnt_foresub_map_)
             time_sum_flux_ = np.array(micro_flx_foresub_map_)
             time_sum_fluxerr_ = np.array(micro_flxerr_foresub_map_)
+            
+            micro_fore_N_ = np.expand_dims(np.array(micro_fore_N_), 1)
+            time_ene_sum_fore_ = np.sum(np.multiply(np.array(micro_fore_map_), micro_fore_N_), axis=0)
+            time_ene_sum_forecnt_ = np.sum(micro_forecnt_map_, axis=0)
+
         else:
             logger.info('Computing the flux for each micro energy bin...')
             time_sum_flux_ = time_sum_cnt_/time_sum_exp_/sr
@@ -296,7 +302,16 @@ def mkRestyle(**kwargs):
 
         logger.info('Saving macro flux maps...')
         out_flx_folder = os.path.join(X_OUT, 'output_flux')
+        out_fore_folder = os.path.join(X_OUT, 'output_fore')
+        if not os.path.exists(out_flx_folder):
+            os.makedirs(out_flx_folder)
+        if not os.path.exists(out_fore_folder):
+            os.makedirs(out_fore_folder)
+            
         if kwargs['foresub'] == True:
+            macro_fore_name = os.path.join(out_fore_folder, '%s_%s_%s_foresub_%i-%i.fits'\
+									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
+            hp.write_map(macro_fore_name, time_ene_sum_fore_, overwrite=overwrite)
             macro_cnt_name = os.path.join(out_cnt_folder, '%s_%s_%s_counts_%i-%i.fits'\
 									%(out_label, mask_label, fore_label, E_MIN, E_MAX))
             macro_flx_name = os.path.join(out_flx_folder, '%s_%s_%s_flux_%i-%i.fits'\
@@ -311,8 +326,7 @@ def mkRestyle(**kwargs):
             macro_flx_msk_name = os.path.join(out_flx_folder, '%s_%s_noforesub_fluxmasked_%i-%i.fits'\
 									%(out_label, mask_label, E_MIN, E_MAX))
             
-        if not os.path.exists(out_flx_folder):
-            os.makedirs(out_flx_folder)
+
         hp.write_map(macro_cnt_name, time_ene_sum_cnt_, overwrite=overwrite)
         hp.write_map(macro_flx_name, time_ene_sum_flux_, overwrite=overwrite)
         hp.write_map(macro_flx_msk_name, time_ene_sum_flux_masked, overwrite=overwrite)
