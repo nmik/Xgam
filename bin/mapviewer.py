@@ -81,7 +81,7 @@ def maps_view(**kwargs):
         healpix_map = hp.pixelfunc.ud_grade(healpix_maps, nside_out, pess=True)
     else:
     	healpix_map = hp.pixelfunc.ud_grade(healpix_maps, nside_out, pess=True, power=-2)
-    hp.mollview(healpix_map, title=TITLE, norm=NORM, coord=COORD, 
+    hp.mollview(healpix_map, title=TITLE, norm=NORM, coord=COORD, flip='geo', 
     					  min=MINVAL, max=MAXVAL, cmap=CMAP, unit=UNIT)
     if kwargs['save'] == True:
     	if not os.path.exists(os.path.join(X_OUT, 'figs')):
