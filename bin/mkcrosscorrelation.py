@@ -47,8 +47,7 @@ PARSER = argparse.ArgumentParser(description=__description__,
 PARSER.add_argument('-c', '--config', type=str, required=True,
                     help='the input configuration file')
 PARSER.add_argument('--show', type=ast.literal_eval, choices=[True, False],
-                    default=False,
-                    help='True if you want to see the maps')
+                    default=False, help='True if you want to see the maps')
 PARSER.add_argument('--overwrite', type=bool, choices=[True, False],
                     default=False, help='if True overwrite existing output files')
 
