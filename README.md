@@ -36,8 +36,7 @@ In the data directory should there be the following folders:
 
 Docker alternative
 ------------------
-(Instructions about how to use the docker will be available soon.)
-
+See the dedicated wiki page.
 
 How to run the analysis
 -----------------------
