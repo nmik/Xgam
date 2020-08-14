@@ -258,7 +258,7 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
         C's right error, C's left error
     """
     #show=True
-    mask_map=None
+    #mask_map=None
     logger.info('Performing poissonian fit...')
     norm_guess = n_guess
     igrb_guess = c_guess
