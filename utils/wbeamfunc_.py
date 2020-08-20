@@ -140,12 +140,13 @@ def wbeam_parse(wb_file, l_max=1500):
     """
     f = open(wb_file, 'r')
     e_ = []
-    l_ = np.arange(l_max)
+    l_ = []
     _z_ = []
     for i, line in enumerate(f):
         if 'l' in line:
             e_.extend(float(item) for item in line.split()[1:])
         elif str(i-1) == line.split()[0]:
+            l_.append(i+1)
             _z_.append(np.array([float(item) for item in line.split()[1:]]))
     return np.array(e_), l_, np.array(_z_)
     
@@ -167,6 +168,7 @@ def get_2D_wbeam(wb_file, show=False):
     	
     """
     en_, l_, _z_ = wbeam_parse(wb_file)
+    print(len(en_), len(l_), len(_z_))
     fmt = dict(xname='$l$', xunits='', yname='Energy',
                              yunits='MeV', zname='W$_{beam}$(E,$l$)')
     wbeam = xInterpolatedBivariateSplineLinear(l_, en_, _z_, **fmt)
@@ -274,7 +276,7 @@ def main():
         psf_f = os.path.join(X_OUT, 'fits/psf_SV_t32.fits')
         psf = get_psf_th_en_bivariatespline(psf_f)
         out_wbeam_txt = 'P8R3_SOURCEVETO_V2_evt32_wbeam.txt'
-        l_ = np.arange(1500)
+        l_ = np.arange(2100)
         wb = build_wbeam(psf, l_, out_wbeam_txt)
     
     if RETRIEVE:
@@ -283,32 +285,38 @@ def main():
         out_wbeam_txt = os.path.join(X_OUT, 'P8R3_SOURCEVETO_V2_evt56_wbeam.txt')
         wb_2d = get_2D_wbeam(out_wbeam_txt, show=True)
         
-        wpix = hp.wpix = hp.sphtfunc.pixwin(512)
+        wpix = hp.sphtfunc.pixwin(1024)
         
         logger.info('Wait...computing integral Wbeam at some energy intervals!')
         gamma = 2.3
         spec = get_powerlaw_spline(gamma)
         
-        _emin = np.array([500., 1000.00, 10000, 100000])
-        _emax =  np.array([1000.00, 5000, 15000, 300000])
+        _emin = np.array([631.0,1202.3,2290.9,4786.3,9120.1,17378.0,36307.8,69183.1,131825.7])
+        _emax =  np.array([1202.3,2290.9,4786.3,9120.1,17378.0,36307.8,69183.1,131825.7,1000000])
         
-        c = ['0.', '0.2','0.4','0.6','0.4','0.5','0.6','0.7','0.8','0.9','0.95']
+        c = ['0.1', '0.2','0.4','0.5','0.6','0.7','0.8','0.9','0.95']
         fig = plt.figure(facecolor='white')
         
+        wb_ = []
         plot = fig.add_subplot(111)
-        plt.plot(np.arange(1501), wpix[:1501], '--', color='silver', label='W$_{pix}$')
+        plt.plot(np.arange(2000), wpix[:2000], '--', color='silver', label='W$_{pix}$')
         for i, (emin, emax) in enumerate(zip(_emin, _emax)):
             wb = get_1D_wbeam(out_wbeam_txt, spec, e_min=emin, e_max=emax)
+            wb_.append(wb.y)
             print('wl(l=1)**2 = %e'%(wb(2)*wpix[1])**2)
             wb.plot(show=False, label='%.2f-%.2f GeV'%(emin/1000, emax/1000), color='%s'%c[i])
             
         plt.ylabel('W$_{beam}$', size=15)
         plt.xlabel('$l$', size=15)
-        plt.ylim(0,1.4)
+        plt.ylim(-1,1.1)
         plt.xlim(0, 1500)
-        plt.legend(loc=1, fontsize=14)
+        plt.legend(loc=3, fontsize=10, fancybox=True)
         plot.tick_params(axis='both', which='major', labelsize=14)
-        plt.grid('off')
+        #plt.grid('off')
+        
+        txt_f = 'output/Wbeam_SV_t56_DESbinning.txt'
+        np.savetxt(txt_f, np.array(wb_).T, header='E1\tE2\tE3\tE4\tE5\tE6\tE7\tE8\tE9')
+        
         
         plt.show()
     
