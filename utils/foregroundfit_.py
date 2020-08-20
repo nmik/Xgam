@@ -20,7 +20,7 @@ from scipy.special import factorial
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 
-from Xgam import X_OUT
+from Xgam import X_OUT, X_CONFIG
 from Xgam.utils.logging_ import logger, startmsg
 from Xgam.utils.spline_ import xInterpolatedUnivariateSplineLinear
 
@@ -267,7 +267,7 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
     logger.info('N guess = %.2f - C guess = %.1e'%(norm_guess, igrb_guess))
     if mask_map is None:
         logger.info('fit outside default mask: 30deg gp, 2 deg srcs.')
-        mask_f = os.path.join(X_OUT, 'fits/Mask_hp64_src2_gp30.fits')
+        mask_f = os.path.join(X_CONFIG, 'Mask_hp64_src2_gp30.fits')
         mask = hp.read_map(mask_f)
     else:
         logger.info('fit outside mask given in config file.')
