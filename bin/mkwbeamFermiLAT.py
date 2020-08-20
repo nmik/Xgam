@@ -47,7 +47,7 @@ PARSER.add_argument('--evtype', type=int, required=False,
 PARSER.add_argument('--ltfile', type=str, required=False,
                     help='livetimes .fits or .txt with list of .fits', 
                     default=None)
-PARSER.add_argument('--lmax', type=str, required=False,
+PARSER.add_argument('--lmax', type=int, required=False,
                     help='Maximuma multipole value', 
                     default=1500)
 PARSER.add_argument('--show', type=ast.literal_eval, choices=[True, False],
