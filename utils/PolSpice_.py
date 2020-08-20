@@ -149,7 +149,7 @@ def pol_run(config_file):
 
     return 0
 
-def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, nbin=25, 
+def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, cn=0, rebin=None, nbin=25, 
                         lmin=1, lmax=1500, bin_type='lin', custom_bins=None, show=False):
     """
     Parser of the txt output file of PolSpice, which contains the angular power spectrum (APS).
@@ -174,10 +174,12 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, n
         (estimated from the covariance matrix). If rebin is not None the arrays are
         the rebinned array.
     """
-    hdu = pf.open(pol_cov_out_file)
-    _cov = hdu[0].data[0]
-    _invcov = np.linalg.inv(_cov)
+    if pol_cov_out_file:
+        hdu = pf.open(pol_cov_out_file)
+        _cov = hdu[0].data[0]
+        _invcov = np.linalg.inv(_cov)
     f = open(pol_cl_out_file, 'r')
+    
 
     _l, _cl = [], []
     for line in f:
@@ -192,11 +194,16 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, n
     if wl_array is not None:
         wl = wl_array
         _l = _l[:len(wl)]
-        _cl = (_cl[:len(wl)])/(wl**2)
-        _cov_ = np.array([_cov[i][:len(wl)] for i in range(0,len(wl))])
-        _cov_ = _cov_/(wl**2)
-        for l in range(len(wl)):
-            _cov_[l] = _cov_[l]/(wl**2)
+        _cl = (_cl[:len(wl)] - cn)/(wl**2)
+        
+        if pol_cov_out_file:
+            _cov_ = np.array([_cov[i][:len(wl)] for i in range(0,len(wl))])
+            _cov_ = _cov_/(wl**2)
+            for l in range(len(wl)):
+                _cov_[l] = _cov_[l]/(wl**2)
+        else:
+            _clerr = np.sqrt(2/(2*_l+1))*(_cl + cn/wl**2)
+            print(len(_clerr))
     else:
         pass
 
@@ -218,16 +225,24 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, rebin=None, n
                 _lmean = (bmin+bmax)/2
             _lr.append(_lmean)
             _clmean = np.mean(_cl[_index])
-            _clerr = np.mean(_cov[bmin:bmax,bmin:bmax])
-            logger.info('cl_mean %.3e'%_clmean)
-            logger.info('cl_mean err %.3e'%np.sqrt(_clerr))
             _clr.append(_clmean)
-            _clerrr.append(np.sqrt(_clerr))
+            logger.info('cl_mean %.3e'%_clmean)
+
+            if pol_cov_out_file:
+                _clerr = np.sqrt(np.mean(_cov[bmin:bmax,bmin:bmax]))
+            else:
+                _cler = np.mean(_clerr[_index])
+            logger.info('cl_mean err %.3e'%_cler)
+            _clerrr.append(_cler)
+            
         _l = np.array(_lr)
         _cl = np.array(_clr)
         _clerr = np.array(_clerrr)
     else:
-        _clerr = np.array([np.sqrt(_cov[i][i]) for i in _l.astype(int)])
+        if pol_cov_out_file:
+            _clerr = np.array([np.sqrt(_cov[i][i]) for i in _l.astype(int)])
+        else:
+            pass
         
     if show:
         plt.figure()
@@ -328,8 +343,8 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
         
     return _cov
 
-def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, rebin=None, lmin=1, 
-                      lmax=1500, nbin=25, custom_bins=None, bin_type='lin', show=False):
+def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, cn=0, rebin=None, lmin=1, 
+                      lmax=1500, nbin=25, custom_bins=None, bin_type='lin', cov=True, show=False):
     """
     Creates and runs the PolSpice config file, and returns the arrays of
     1) the multipoles (rebinned or not); 2) the Cl corresponding to the
@@ -367,22 +382,31 @@ def pol_cl_calculation(pol_dict, config_file_name, wl_array=None, rebin=None, lm
     cbins = custom_bins
     lm, lM = lmin, lmax
     pol_cl_out_file = pol_dict['clfile']
-    pol_cov_out_file = pol_dict['covfileout']
     config_file = pol_create_config(pol_dict, config_file_name)
     pol_run(config_file)
     
     if custom_bins is None:
-        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=wl, 
+        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, None, wl_array=wl, cn=cn, 
                                          rebin=r, nbin=nb, lmin=lm, lmax=lM, bin_type=bt)
-        _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, lmin=lm, lmax=lM, rebin=r,  
+        if cov:
+            pol_cov_out_file = pol_dict['covfileout']
+            _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=wl, cn=cn, 
+                                          rebin=r, nbin=nb, lmin=lm, lmax=lM, bin_type=bt)
+            _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, lmin=lm, lmax=lM, rebin=r,  
                                                             nbin=nb, bin_type=bt, show=s)
     else:
-        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, lmin=lm, lmax=lM,
-                            wl_array=wl, rebin=r, nbin=nb, bin_type=bt, custom_bins=cbins)  
-        _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, rebin=r, lmin=lm, lmax=lM,
+        _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, None, lmin=lm, lmax=lM,
+                            wl_array=wl, cn=cn, rebin=r, nbin=nb, bin_type=bt, custom_bins=cbins)  
+        if cov:
+            pol_cov_out_file = pol_dict['covfileout']
+            _l, _cl, _clerr = pol_cl_parse(pol_cl_out_file, pol_cov_out_file, lmin=lm, lmax=lM,
+                            wl_array=wl, cn=cn, rebin=r, nbin=nb, bin_type=bt, custom_bins=cbins)  
+            _cov = pol_cov_parse(pol_cov_out_file,  wl_array=wl, rebin=r, lmin=lm, lmax=lM,
                                         nbin=nb, bin_type=bt,  custom_bins=cbins, show=s)                           
-    
-    return _l, _cl, _clerr, _cov
+    if cov:
+        return _l, _cl, _clerr, _cov
+    else:
+        return _l, _cl, _clerr
 
 def main():
     """test module
