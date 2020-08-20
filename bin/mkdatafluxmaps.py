@@ -162,13 +162,16 @@ def mkRestyle(**kwargs):
                     for line in txt:
                         if 'gtbin' in line:
                             cnt_map = (hp.read_map(line.replace('\n', ''), field=mb))
+                            nside = hp.npix2nside(len(cnt_map))
                             t_micro_cnt_maps.append(cnt_map)
                         if 'gtexpcube2' in line:
                             if bincalc == 'CENTER':
                                 emap_mean = hp.read_map(line.replace('\n', ''), field=mb)
+                                emap_mean = hp.ud_grade(emap_mean, nside_out=nside)
                             elif bincalc == 'EDGE':
                                 emap = hp.read_map(line.replace('\n', ''), field=range(mb, mb+2))
                                 emap_mean = np.sqrt(emap[0]*emap[1])
+                                emap_mean = hp.ud_grade(emap_mean, nside_out=nside)
                             else:
                                 logger.info('ATT: Invalid bincalc!')
                                 sys.exit()
