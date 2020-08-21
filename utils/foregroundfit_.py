@@ -272,8 +272,7 @@ def fit_foreground_poisson(fore_map, data_map, mask_map=None, n_guess=1.,
     else:
         logger.info('fit outside mask given in config file.')
         mask = mask_map
-        mask = np.array(hp.ud_grade(mask, nside_out=nside_out,
-                                      power=-2))
+        mask = hp.ud_grade(mask, nside_out=nside_out, power=-2)
         mask[np.where(mask!=np.amax(mask))[0]] = 0
         mask[np.where(mask==np.amax(mask))[0]] = 1
     logger.info('down grade...')
