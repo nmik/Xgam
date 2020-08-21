@@ -36,6 +36,9 @@ PARSER.add_argument('-c', '--config', type=str, required=True,
 PARSER.add_argument('--foresub', type=ast.literal_eval, choices=[True, False],
                     default='True',
                     help='galactic foreground subtraction activated')
+PARSER.add_argument('--cntsCELcoord', type=ast.literal_eval, choices=[True, False],
+                    default='False',
+                    help='if True, counts maps are assumed to be in CEL coord')
 PARSER.add_argument('--overwrite', type=ast.literal_eval, choices=[True, False],
                     default='False',
                     help='overwrite existing maps')
@@ -150,6 +153,7 @@ def mkRestyle(**kwargs):
                 logger.info('Counts and exposure maps ready! Retrieving them...')
                 cnt_map = hp.read_map(micro_cnt_name)
                 exp_map = hp.read_map(micro_exp_name)
+                
                 time_sum_cnt_.append(cnt_map)
                 time_sum_exp_.append(exp_map)
             else:
@@ -175,6 +179,9 @@ def mkRestyle(**kwargs):
                             else:
                                 logger.info('ATT: Invalid bincalc!')
                                 sys.exit()
+                            if kwargs['cntsCELcoord']:
+                                from Xgam.utils.PolSpice_ import change_coord
+                                emap_mean = change_coord(emap_mean, ['G', 'C'])
                             t_micro_exp_maps.append(emap_mean)
                     txt.close()
                 logger.info('Summing in time and saving micro cnt and exp maps...')
