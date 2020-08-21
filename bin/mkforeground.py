@@ -36,6 +36,8 @@ PARSER.add_argument('-f', '--infile', type=str, required=True,
                     help='input fits file of Fermi Foreground model')
 PARSER.add_argument('--nsideout', type=int, default=512,
                     help='NSIDE of the output HEALPix maps')
+PARSER.add_argument('--coord', type=str, required=False, choices=['GAL', 'CEL'], 
+                    default='GAL', help='input preferred sky coordinate')
 PARSER.add_argument('-s', '--show', type=bool, required=False, default=False,
                     help='input fits file of Fermi Foreground model')
 
@@ -84,11 +86,17 @@ def foreground_map_convert(**kwargs):
         		hp_frmap[i] = frspline((lon_hp[i]+360)%360, lat_hp[i])
         	fr_e.append(hp_frmap[12426])
         	hp_frmap_out = hp.pixelfunc.ud_grade(hp_frmap, nside_out,  pess=True)
+            if kwargs['coord']=='CEL':
+                from Xgam.utils.PolSpice_ import change_coord
+                hp_frmap_out = change_coord(hp_frmap_out, ['G', 'C'])
+                logger.info('Changing coordinate system to celestial')
         	hp.write_map(out_path, hp_frmap_out, coord='G')
         	logger.info('Created map %s'%out_path)
         out_list.append(out_path)
     out_name_list = os.path.basename(input_file).replace('.fits','_hp%i_list.txt'%nside_out)
     out_name_list = os.path.join(X_OUT, 'fits', out_name_list)
+    if kwargs['coord']=='CEL':
+        out_name_list = out_name_list.replace('GAL', 'CEL')
     logger.info('Writing list of output files: %s'%out_name_list)
     np.savetxt(out_name_list, out_list, fmt='%s')
 
