@@ -26,6 +26,37 @@ from matplotlib import pyplot as plt
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger
 
+def change_coord(m, coord):
+    """
+    Define the new binning.
+
+    Parameters
+	----------
+    m : array
+       map to be converted
+    coord: list
+       list of two strings choosen among 'G', 'C', 'E'. E.g.: to go from galactic to 
+       celestial coordinates: coord = ['G', 'C'] 
+	Returns
+	-------
+	array
+	   the array with the new map
+    """
+    # Basic HEALPix parameters
+    npix = m.shape[-1]
+    nside = hp.npix2nside(npix)
+    ang = hp.pix2ang(nside, np.arange(npix))
+
+    # Select the coordinate transformation
+    rot = hp.Rotator(coord=reversed(coord))
+
+    # Convert the coordinates
+    new_ang = rot(*ang)
+    new_pix = hp.ang2pix(nside, *new_ang)
+
+    return m[..., new_pix]
+
+
 def new_binning(xmin, xmax, nbin=25, bin_type='lin', out_type=int, custom_bins=None):
     """
     Define the new binning.
