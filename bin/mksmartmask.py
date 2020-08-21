@@ -58,8 +58,9 @@ PARSER.add_argument('--srcextcat',type=str,
 PARSER.add_argument('--outflabel',type=str,
                     default='4FGL_GP25', help='label of output file')
 PARSER.add_argument('--typesrcmask', type=ast.literal_eval,
-                    choices=[1, 2], default=1,
-                    help='1=... ; 2=... ;')
+                    choices=[1, 2], default=1, help='1=function1 ; 2=function2 ;')
+PARSER.add_argument('--coord', type=str, required=False, choices=['GAL', 'CEL'], 
+                    default='GAL', help='input preferred sky coordinate')
 PARSER.add_argument('--show', type=bool, choices=[True, False],
                     default=False, help='if True the mask map is displayed')
 PARSER.add_argument('--overwrite', type=bool, choices=[True, False],
@@ -166,7 +167,7 @@ def mkSmartMask(**kwargs):
     npix = hp.nside2npix(nside)
     src_cat = kwargs['srccat']
     src_ext_cat = kwargs['srcextcat']
-    out_name_list = os.path.join(X_OUT, 'fits/MaskSmart_'+out_label+'_list.txt')
+    out_name_list = os.path.join(X_OUT, 'fits/MaskSmart_'+out_label+'_GAL_list.txt')
     out_list = []
 
     for i, (minb, maxb) in enumerate(macro_bins):
@@ -176,7 +177,10 @@ def mkSmartMask(**kwargs):
         E_MEAN = np.sqrt(emax[0]*emin[-1])
         logger.info('Energies %.1f - %.1f [MeV]' %(E_MIN, E_MAX))
 
-        out_name = os.path.join(X_OUT, 'fits/MaskSmart_'+out_label+'_%.1f_MeV.fits'%(E_MIN))
+        if kwargs['coord']=='CEL':
+            out_name = os.path.join(X_OUT, 'fits/MaskSmart_'+out_label+'_CEL_%i.fits'%(E_MIN))
+        else:
+            out_name = os.path.join(X_OUT, 'fits/MaskSmart_'+out_label+'_GAL_%i.fits'%(E_MIN))
         out_list.append(out_name)
         if os.path.exists(out_name) and not kwargs['overwrite']:
             logger.info('ATT: %s already exists! \n'%out_name)
@@ -193,6 +197,10 @@ def mkSmartMask(**kwargs):
                 os.system('mkdir %s' %os.path.join(X_OUT, 'fits'))
             fsky = 1-(len(np.unique(bad_pix))/float(npix))
             logger.info('fsky = %.3f'%fsky)
+            if kwargs['coord']=='CEL':
+                from Xgam.utils.PolSpice_ import change_coord
+                mask = change_coord(mask, ['G','C'])
+                logger.info('Changing coordinate system to celestial...')
             hp.write_map(out_name, mask, coord='G', overwrite=True)
             logger.info('Created %s \n' %out_name)
 
@@ -200,6 +208,9 @@ def mkSmartMask(**kwargs):
             import matplotlib.pyplot as plt
             hp.mollview(mask, cmap='bone')
             plt.show()
+    
+    if kwargs['coord']=='CEL':
+        out_name_list = out_name_list.replace('GAL', 'CEL')
 
     logger.info('Writing list of output files: %s'%out_name_list)
     np.savetxt(out_name_list, out_list, fmt='%s')
