@@ -12,9 +12,9 @@
 import os
 from Xgam import X_OUT
 
-OUT_LABEL = 'TestAuto_DELME'
+OUT_LABEL = '12years_SV_t56_zmax100_GAL_SMgp25src4fgl_DESbin_glliemv07'
 
-MAPS_LIST = os.path.join(X_OUT, 'output_flux/12years_SV_t56_zmax100_SMgp25src4fgl_glliemv07_flux_list.txt')      
+MAPS_LIST = os.path.join(X_OUT, 'output_flux/12years_SV_t56_zmax100_GAL_SMgp25src4fgl_glliemv07_flux_list.txt')      
 
 MASKS_LIST = os.path.join(X_OUT,'fits/MaskSmart_hp1024_gp25_src4fgl_GAL_list.txt')
 				
@@ -22,8 +22,8 @@ MASKS_LIST = os.path.join(X_OUT,'fits/MaskSmart_hp1024_gp25_src4fgl_GAL_list.txt
 				
 # ----> In case of Fermi LAT maps, also specify:
 FERMI_WBEAM_MATRIX = os.path.join(X_OUT, 'P8R3_SOURCEVETO_V2_evt56_Wbeam.txt')
-FERMI_CN_LIST = [2.10e-17, 7.63e-18, 3.28e-18, 1.06e-18, 3.81e-19,
-                 1.52e-19, 4.51e-20, 1.69e-20, 9.84e-21]
+FERMI_CN_LIST = [5.67e-18,2.01e-18,8.61e-19,2.86e-19,1.13e-19,
+				 4.70e-20,1.37e-20,4.57e-21,2.13e-21]
 GAMMA = 2.3 #index of the power law assumed to compute the integral of the Wbeam in the energy bin
 
 
@@ -35,20 +35,20 @@ LSS_TRACER_WBEAM_LIST = None
 
 # ----> APS parameters
 BINNING_MIN_MULTIPOLE = 0
-BINNING_MAX_MULTIPOLE = 1500
-BINNING_MULTIPOLE_NBIN = 45
+BINNING_MAX_MULTIPOLE = 1900
+BINNING_MULTIPOLE_NBIN = 60
 BINNING_MULTIPOLE_ALGORITHM = 'lin'  #'lin' or 'log'
 BINNING_CUSTOM = None #None or list. If a list, previous parameters are neglected.
 
 
 
 # ----> Fitting function
-MAX_APS_MULTIPOLE_FIT = [300, 400, 500, 700, 500, 900, 900, 1000, 1000] #number of list
+MAX_APS_MULTIPOLE_FIT = [250, 400, 500, 700, 1100, 1400, 1900, 1900, 1900] #number of list
 
 def FIT_FUNCTION(x, a, b, c):
     return a * x**(-b) + c
 
-
+FIT_GUESS = [1,1,1]
 
 # ----> PolSpice Settings
 POLCEPICE_DICT = {'mapfile' : 'DEFAULT',
@@ -59,8 +59,8 @@ POLCEPICE_DICT = {'mapfile' : 'DEFAULT',
                   'cl_outmap_file' : 'DEFAULT',
                   'covfileout' :'NO',
                   'corfile' : 'NO',
-				  'apodizesigma' : 100,
-                  'thetamax' : 100,
+				  'apodizesigma' : 180,
+                  'thetamax' : 180,
                   'nlmax' : BINNING_MAX_MULTIPOLE,
                   'verbosity' : 1,
                   'apodizetype' : 'NO',
