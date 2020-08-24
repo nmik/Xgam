@@ -263,10 +263,12 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, cn=0, rebin=N
 
             if pol_cov_out_file:
                 _clerr = np.sqrt(np.mean(_cov[bmin:bmax,bmin:bmax]))
+                logger.info('cl_mean err %.3e'%_clerr)
+                _clerrr.append(_clerr)
             else:
                 _cler = np.mean(_clerr[_index])
-            logger.info('cl_mean err %.3e'%_cler)
-            _clerrr.append(_cler)
+                logger.info('cl_mean err %.3e'%_cler)
+                _clerrr.append(_cler)
             
         _l = np.array(_lr)
         _cl = np.array(_clr)
