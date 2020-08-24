@@ -96,7 +96,7 @@ def mkMask(**kwargs):
         from Xgam.utils.mkmask_ import mask_extsrc
         src_mask_rad = data.SRC_MASK_RAD
         cat_file = data.EXTSRC_CATALOG
-        bad_pix += mask_extsrc(cat_file, src_mask_rad, nside)
+        bad_pix += mask_extsrc(cat_file, nside)
     if kwargs['gpmask'] == 'flat':
         from Xgam.utils.mkmask_ import mask_gp
         gp_mask_lat = data.GP_MASK_LAT
