@@ -84,6 +84,7 @@ def mkAuto(**kwargs):
     bin_custom = data.BINNING_CUSTOM
     fit_function = data.FIT_FUNCTION
     cn_list = data.FERMI_CN_LIST
+    fit_guess = data.FIT_GUESS
     
     if type(maps_) == str and maps_.endswith(('.txt','.dat')):
         maps_ = open(maps_, 'r')
@@ -104,7 +105,7 @@ def mkAuto(**kwargs):
             logger.info('ATT: Overwriting files!')
             
     cl_txt = open(cl_txt_f, 'w')
-    wl_ = []
+    emin_, emax_, wl_, fsky_ = [], [], [], []
     logger.info('----- AUTO -----')
     for i, m1_f in enumerate(maps_):
         l_max = l_max_[i]
@@ -131,6 +132,7 @@ def mkAuto(**kwargs):
         wpix = hp.wpix = hp.sphtfunc.pixwin(nside, lmax=lmax-1)
         cn = cn_list[i]
         fsky = np.sum(mask)/len(mask)
+        fsky_.append(fsky)
 		
         if fermi_wb_matrix is not None:
             logger.info('Computing the fermi beam window function ...')
@@ -141,6 +143,8 @@ def mkAuto(**kwargs):
             emax = float(emax_str.group(0).replace('.fits', ''))
             wb_spline = get_1D_wbeam(fermi_wb_matrix, spec, e_min=emin, e_max=emax)
             wb = wb_spline(np.arange(lmax))
+            emin_.append(emin)
+            emax_.append(emax)
             
             if kwargs['show']:
                 wb_spline.plot(show=False, label='%.2f-%.2f GeV'%(emin/1000, emax/1000), color='0.3')
@@ -194,7 +198,9 @@ def mkAuto(**kwargs):
         fit_idx = np.where((_l >= 30)&(_l <= l_max))[0]
 
         try: 
-            popt, pcov = curve_fit(fit_function, _l[fit_idx], _cl[fit_idx], sigma=_cl_err[fit_idx])
+            popt, pcov = curve_fit(fit_function, _l[fit_idx], _cl[fit_idx], sigma=_cl_err[fit_idx],
+                                   bounds=([0, 0, -np.inf], [np.inf, np.inf, np.inf]),)
+                                   #p0=fit_guess)
             logger.info('\n')
             logger.info('********************************')
             logger.info('Multipole fit range: %i - %i'%(30, l_max))
@@ -227,89 +233,106 @@ def mkAuto(**kwargs):
             cl_txt.write('Cn : %s\n'%str(cn))
             cl_txt.write('Error - curve_fit failed\n')
 
-#             plt.figure()
-#             plt.errorbar(_l[fit_idx], _cl[fit_idx], yerr=_cl_err[fit_idx], fmt='.')
-#             if bin_alg == 'log':
-#                 plt.xscale('log')    
-#             plt.show()
+            plt.figure()
+            plt.errorbar(_l[fit_idx], _cl[fit_idx], yerr=_cl_err[fit_idx], fmt='.')
+            if bin_alg == 'log':
+                plt.xscale('log')    
+            plt.show()
     
     
     
     
-    logger.info('----- CROSS -----')
-    
-    for i, m1_f in enumerate(maps_):
-        wl1 = wl_[i]
-        mask1_f = masks_[i]
-        for j in range(i, len(maps_)):
-            wl2 = wl_[j]
-            m2_f = maps_[j]
-            mask2_f = masks_[j]
-            if m1_f == m2_f:
-               continue
-            
-            out_folder =  os.path.join(X_OUT, 'output_pol')
-            if not os.path.exists(out_folder):
-                os.makedirs(out_folder)
-            pol_dict = data.POLCEPICE_DICT
-            for key in pol_dict:
-                if key == 'clfile':
-                    pol_dict[key] = os.path.join(out_folder,'%s_%i%i_cl.txt'%(out_label, i, j))
-                if key == 'cl_outmap_file':
-                    pol_dict[key] = os.path.join(out_folder,'%s_%i%i_clraw.txt'%(out_label, i, j))
-                if key == 'mapfile':
-                    pol_dict[key] = m1_f
-                if key == 'maskfile':
-                    pol_dict[key] = mask1_f
-                if key == 'mapfile2':
-                    pol_dict[key] = m2_f
-                if key == 'maskfile2':
-                    pol_dict[key] = mask2_f
-            config_file_name = os.path.join(out_folder, 'pol_autocrossconfig_%s_%i%i.txt'%(out_label, i, j))
-       
-            wl = np.sqrt(wl1*wl2)
-            _l, _cl, _cl_err = pol_cl_calculation(pol_dict, config_file_name, cov=False,
-                                                        wl_array=wl, cn=0, rebin=True,
-                                                        nbin=bin_num, bin_type=bin_alg,
-                                                        lmin=lmin, lmax=lmax,
-                                                        custom_bins=bin_custom)
-            
-            cl_txt.write('# CROSSCORR ---> %i x %i\n'%(i, j))
-            
-            fit_idx = np.where((_l >= 30)&(_l <= l_max_[i]))[0]
-
-            try: 
-                popt, pcov = curve_fit(fit_function, _l[fit_idx], _cl[fit_idx], sigma=_cl_err[fit_idx])
-                logger.info('\n')
-                logger.info('********************************')
-                logger.info('Multipole fit range: %i - %i'%(30, l_max_[i]))
-                logger.info('Best fit param: %s'%str(popt))
-                logger.info('********************************\n')
-                cl_txt.write('Cn : 0')
-                cl_txt.write('Multipole fit range: %i - %i\n'%(30, l_max_[i]))
-                cl_txt.write('Best fit params : %s\n'%str(popt))
-             
-            
-                plt.figure()
-                plt.errorbar(_l[fit_idx], _cl[fit_idx], yerr=_cl_err[fit_idx], fmt='.', 
-                                            label='%.2f-%.2f GeV'%(emin/1000, emax/1000))
-                plt.plot(_l[fit_idx], fit_function(_l[fit_idx], *popt))
-                if bin_alg == 'log':
-                    plt.xscale('log')
-                plt.xlabel('$\ell$')
-                plt.ylabel('$C_{\ell}$')
-                plt.legend()
-                plt.savefig('output/figs/Autocorr_%ix%i'%(i,j))
-                 
-                if kwargs['show']:  
-                    plt.show()
-             
-            except RuntimeError:
-                logger.info('\n')
-                logger.info('********************************')
-                logger.info("Error - curve_fit failed")
-                logger.info('********************************\n')
-                cl_txt.write('Error - curve_fit failed\n')
+#     logger.info('----- CROSS -----')
+#     
+#     for i, m1_f in enumerate(maps_):
+#         wl1 = wl_[i]
+#         fsky1 = fsky_[i]
+#         l_max1 = l_max_[i]
+#         for j in range(i, len(maps_)):
+#             wl2 = wl_[j]
+#             m2_f = maps_[j]
+#             fsky2 = fsky_[j]
+#             l_max2 = l_max_[j]
+#             if m1_f == m2_f:
+#                continue
+#             if fsky1 <= fsky2:
+#                 mask_f = masks_[2]
+#             else:
+#                 mask_f = masks_[2]
+#             out_folder =  os.path.join(X_OUT, 'output_pol')
+#             if not os.path.exists(out_folder):
+#                 os.makedirs(out_folder)
+#             pol_dict = data.POLCEPICE_DICT
+#             print('--------------------------')
+#             print(m1_f)
+#             print(m2_f)
+#             print(mask_f)
+#             for key in pol_dict:
+#                 if key == 'clfile':
+#                     pol_dict[key] = os.path.join(out_folder,'%s_%i%i_cl.txt'%(out_label, i, j))
+#                 if key == 'cl_outmap_file':
+#                     pol_dict[key] = os.path.join(out_folder,'%s_%i%i_clraw.txt'%(out_label, i, j))
+#                 if key == 'mapfile':
+#                     pol_dict[key] = m1_f
+#                 if key == 'maskfile':
+#                     pol_dict[key] = mask_f
+#                 if key == 'mapfile2':
+#                     pol_dict[key] = m2_f
+#                 if key == 'maskfile2':
+#                     pol_dict[key] = mask_f
+#             config_file_name = os.path.join(out_folder, 'pol_autocrossconfig_%s_%i%i.txt'%(out_label, i, j))
+#        
+#             wl = np.sqrt(wl1*wl2)
+#             _l, _cl, _cl_err = pol_cl_calculation(pol_dict, config_file_name, cov=False,
+#                                                         wl_array=wl, rebin=False,
+#                                                         nbin=bin_num, bin_type=bin_alg,
+#                                                         lmin=lmin, lmax=lmax,
+#                                                         custom_bins=bin_custom)
+#             
+#             cl_txt.write('# CROSSCORR ---> %i x %i\n'%(i, j))
+#             
+#             if l_max1 <= l_max2:
+#                 l_max = l_max1
+#             else:
+#                 l_max = l_max2
+#             
+#             fit_idx = np.where((_l >= 30)&(_l <= l_max))[0]
+# 
+#             try: 
+#                 popt, pcov = curve_fit(fit_function, _l[fit_idx], _cl[fit_idx], sigma=_cl_err[fit_idx],
+#                                     bounds=([0, 0, -np.inf], [np.inf, np.inf, np.inf]),)
+#                                     #p0=fit_guess)
+#                 logger.info('\n')
+#                 logger.info('********************************')
+#                 logger.info('Multipole fit range: %i - %i'%(30, l_max))
+#                 logger.info('Best fit param: %s'%str(popt))
+#                 logger.info('********************************\n')
+#                 cl_txt.write('Cn : 0\n')
+#                 cl_txt.write('Multipole fit range: %i - %i\n'%(30, l_max))
+#                 cl_txt.write('Best fit params : %s\n'%str(popt))
+#              
+#             
+#                 plt.figure()
+#                 plt.errorbar(_l[fit_idx], _cl[fit_idx], yerr=_cl_err[fit_idx], fmt='.', 
+#                                             label='(%.2f-%.2f)GeV x (%.2f-%.2f)GeV'%(emin_[i]/1000, emax_[i]/1000, 
+#                                                                    emin_[j]/1000, emax_[j]/1000))
+#                 plt.plot(_l[fit_idx], fit_function(_l[fit_idx], *popt))
+#                 if bin_alg == 'log':
+#                     plt.xscale('log')
+#                 plt.xlabel('$\ell$')
+#                 plt.ylabel('$C_{\ell}$')
+#                 plt.legend()
+#                 plt.savefig('output/figs/Autocorr_%ix%i'%(i,j))
+#                  
+#                 if kwargs['show']:  
+#                     plt.show()
+#              
+#             except RuntimeError:
+#                 logger.info('\n')
+#                 logger.info('********************************')
+#                 logger.info("Error - curve_fit failed")
+#                 logger.info('********************************\n')
+#                 cl_txt.write('Error - curve_fit failed\n')
 
             
     cl_txt.close()
