@@ -125,16 +125,6 @@ def find_outer_energies(en_val, en_arr):
     return en_sx, en_dx
 
 @jit
-def myfactorial(_x):
-    _facx = []
-    for x in _x:
-        n = 1
-        for i in range(2, x+1):
-            n *= i
-        _facx.append(n)
-    return np.array(_facx)
-    
-@jit
 def poisson_likelihood(norm_guess, const_guess, fore_map, data_map, exp=None, sr=None):
     """
     Compute the log-likelihood as decribed here:
@@ -174,10 +164,12 @@ def poisson_likelihood(norm_guess, const_guess, fore_map, data_map, exp=None, sr
     lh = 0
     if exp is not None:
         for i, f in enumerate(fore_map):
-            lh += (a*f+b)*exp[i]*sr+np.log(factorial_data[i])-data_map[i]*np.log((a*f+b)*exp[i]*sr)
+            #lh += (a*f+b)*exp[i]*sr+np.log(factorial_data[i])-data_map[i]*np.log((a*f+b)*exp[i]*sr)
+            lh += (a*f+b)*exp[i]*sr-data_map[i]*np.log((a*f+b)*exp[i]*sr)
     else:
         for i, f in enumerate(fore_map):
-            lh += np.sum(((a*f+b)+np.log(factorial_data[i])-data_map[i]*np.log((a*f+b))))
+            #lh += np.sum(((a*f+b)+np.log(factorial_data[i])-data_map[i]*np.log((a*f+b))))
+            lh += np.sum(((a*f+b)-data_map[i]*np.log((a*f+b))))
     return lh
 
 
