@@ -85,11 +85,11 @@ def foreground_map_convert(**kwargs):
         	for i, pix in enumerate(hp_frmap):
         		hp_frmap[i] = frspline((lon_hp[i]+360)%360, lat_hp[i])
         	fr_e.append(hp_frmap[12426])
-        	hp_frmap_out = hp.pixelfunc.ud_grade(hp_frmap, nside_out,  pess=True)
-            if kwargs['coord']=='CEL':
-                from Xgam.utils.PolSpice_ import change_coord
-                hp_frmap_out = change_coord(hp_frmap_out, ['G', 'C'])
-                logger.info('Changing coordinate system to celestial')
+        	hp_frmap_out = hp.pixelfunc.ud_grade(hp_frmap, nside_out, pess=True)
+        	if kwargs['coord']=='CEL':
+        	    from Xgam.utils.PolSpice_ import change_coord
+        	    hp_frmap_out = change_coord(hp_frmap_out, ['G', 'C'])
+        	    logger.info('Changing coordinate system to celestial')
         	hp.write_map(out_path, hp_frmap_out, coord='G')
         	logger.info('Created map %s'%out_path)
         out_list.append(out_path)
