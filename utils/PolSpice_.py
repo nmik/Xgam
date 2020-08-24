@@ -222,6 +222,7 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, cn=0, rebin=N
             pass
     _l = np.array(_l)
     _cl = np.array(_cl)
+
     if wl_array is not None:
         wl = wl_array
         _l = _l[:len(wl)]
@@ -236,6 +237,7 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, cn=0, rebin=N
             _clerr = np.sqrt(2/(2*_l+1))*(_cl + cn/wl**2)
             print(len(_clerr))
     else:
+        _clerr = np.sqrt(2/(2*_l+1))*(_cl)
         pass
 
     if rebin:
