@@ -222,11 +222,14 @@ def pol_cl_parse(pol_cl_out_file, pol_cov_out_file, wl_array=None, cn=0, rebin=N
             pass
     _l = np.array(_l)
     _cl = np.array(_cl)
-
+    if len(_cl) < lmax:
+        logger.info('ATT: Setting new l_max=%i ...'%len(_cl))
+        lmax = len(_cl)
+        
     if wl_array is not None:
-        wl = wl_array
-        _l = _l[:len(wl)]
-        _cl = (_cl[:len(wl)] - cn)/(wl**2)
+        wl = wl_array[:lmax]
+        _l = _l[:lmax]
+        _cl = (_cl[:lmax] - cn)/(wl**2)
         
         if pol_cov_out_file:
             _cov_ = np.array([_cov[i][:len(wl)] for i in range(0,len(wl))])
@@ -317,12 +320,16 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
     hdu = pf.open(pol_cov_out_file)
     _cov = hdu[0].data[0]
     hdu.close()
+    
     _l = np.arange(len(_cov))
+    if len(_l) < lmax:
+        lmax = len(_l)
+        
     if wl_array is not None:
         wl = wl_array
-        _l = np.arange(len(wl_array))
-        _cov = np.array([_cov[i][:len(wl)] for i in range(0,len(wl))])
-        _cov = _cov/(wl**2)
+        _cov = np.array([_cov[i][:lmax] for i in range(0, lmax)])
+        _cov = _cov/(wl[:lmax]**2)
+        print(_l)
         for l in _l:
             _cov[l] = _cov[l]/(wl[l]**2)
     if rebin:
