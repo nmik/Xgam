@@ -64,7 +64,7 @@ def aps_view(**kwargs):
         plt.plot([0, 2000], [0, 0], '--', color='silver')
         plt.errorbar(_l[i], cl, fmt='o', markersize=5, elinewidth=2, label=aps_label, 
                      color='red', yerr=_clerr[i])
-        plt.xlim(np.amin(_l[i])-1, np.amax(_l[i])+1)
+        plt.xlim(np.amin(_l[i]), np.amax(_l[i])+1)
         plt.xscale(kwargs['xscale'])
         plt.xlabel('Multipole', size=15)
         plt.ylabel('C$^{sig}_{\ell}$ [(cm$^{-2}$s$^{-1}$sr$^{-1}$)sr]', size=15)
