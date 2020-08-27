@@ -329,7 +329,6 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
         wl = wl_array
         _cov = np.array([_cov[i][:lmax] for i in range(0, lmax)])
         _cov = _cov/(wl[:lmax]**2)
-        print(_l)
         for l in _l:
             _cov[l] = _cov[l]/(wl[l]**2)
     if rebin:
