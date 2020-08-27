@@ -36,14 +36,14 @@ LSS_TRACER_WBEAM_LIST = None
 # ----> APS parameters
 BINNING_MIN_MULTIPOLE = 0
 BINNING_MAX_MULTIPOLE = 1900
-BINNING_MULTIPOLE_NBIN = 60
+BINNING_MULTIPOLE_NBIN = 65
 BINNING_MULTIPOLE_ALGORITHM = 'lin'  #'lin' or 'log'
 BINNING_CUSTOM = None #None or list. If a list, previous parameters are neglected.
 
 
 
 # ----> Fitting function
-MAX_APS_MULTIPOLE_FIT = [250, 400, 500, 700, 1100, 1400, 1900, 1900, 1900] #number of list
+MAX_APS_MULTIPOLE_FIT = [250, 400, 500, 700, 1100, 1400, 1700, 1750, 1800] #number of list
 
 def FIT_FUNCTION(x, a, b, c):
     return a * x**(-b) + c
