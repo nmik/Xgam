@@ -40,6 +40,9 @@ PARSER.add_argument('-c', '--config', type=str, required=True,
 PARSER.add_argument('--srcmask', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='sources mask activated')
+PARSER.add_argument('--galsrcmask', type=ast.literal_eval, choices=[True, False],
+                    default=False,
+                    help='Mask arr the galactic sources with 2 deg disk')
 PARSER.add_argument('--extsrcmask', type=ast.literal_eval,
                     choices=[True, False], default=False,
                     help='extended sources mask activated')
@@ -58,6 +61,8 @@ PARSER.add_argument('--northmask', type=ast.literal_eval,
 PARSER.add_argument('--southmask', type=ast.literal_eval,
                     choices=[True, False], default=False,
                     help='Southern hemisphere mask activated')
+PARSER.add_argument('--coord', type=str, required=False, choices=['GAL', 'CEL'], 
+                    default='GAL', help='input preferred sky coordinate')
 PARSER.add_argument('--show', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='if True the mask map is displayed')
@@ -92,6 +97,10 @@ def mkMask(**kwargs):
         src_mask_rad = data.SRC_MASK_RAD
         cat_file = data.SRC_CATALOG
         bad_pix += mask_src(cat_file, src_mask_rad, nside)
+    if kwargs['galsrcmask'] == True:
+        from Xgam.utils.mkmask_ import mask_galactic_src
+        cat_file = data.SRC_CATALOG
+        bad_pix += mask_galactic_src(cat_file, 2., nside)
     if kwargs['extsrcmask'] == True:
         from Xgam.utils.mkmask_ import mask_extsrc
         src_mask_rad = data.SRC_MASK_RAD
@@ -132,11 +141,19 @@ def mkMask(**kwargs):
         mask[bpix] = 0
     if not os.path.exists(os.path.join(X_OUT, 'fits')):
     	os.system('mkdir %s' %os.path.join(X_OUT, 'fits'))
-    out_name = os.path.join(X_OUT, 'fits/'+out_label+'.fits')
+    	
+    out_name = os.path.join(X_OUT, 'fits/'+out_label+'_GAL.fits')
     fsky = 1-(len(np.unique(bad_pix))/float(npix))
     logger.info('fsky = %.3f'%fsky)
-    hp.write_map(out_name, mask, coord='G')
-    logger.info('Created %s' %out_name)
+    
+    if kwargs['coord']=='CEL':
+        from Xgam.utils.PolSpice_ import change_coord
+        mask = change_coord(mask, ['G','C'])
+        hp.write_map(out_name.replace('GAL', 'CEL'), mask, coord='C')
+        logger.info('Created %s' %out_name.replace('GAL', 'CEL'))
+    else:
+        hp.write_map(out_name, mask, coord='G')
+        logger.info('Created %s' %out_name)
 
     if kwargs['show'] == True:
     	import matplotlib.pyplot as plt
