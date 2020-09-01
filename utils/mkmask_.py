@@ -19,7 +19,48 @@ import matplotlib.pyplot as plt
 
 from Xgam.utils.logging_ import logger
 
+def mask_galactic_src(cat_file, mask_rad, nside):
+    """Returns the 'bad pixels' defined by the position of a galactic source and a
+       certain radius away from that point.
 
+       cat_file: str
+           .fits file of the sorce catalog
+       MASK_S_RAD: float
+           radius around each source definig bad pixels to mask
+       NSIDE: int
+           healpix nside parameter
+    """
+    logger.info('Mask for sources activated')
+    src_cat = pf.open(cat_file)
+    NPIX = hp.pixelfunc.nside2npix(nside)
+    CAT = src_cat['LAT_Point_Source_Catalog']
+    RADrad = np.radians(mask_rad)
+    
+    SOURCES = CAT.data
+    class1 = SOURCES.field('CLASS1')
+    class_mask = (class1 == 'PSR') | (class1 == 'PWN') | (class1 == 'SNR') | \
+                 (class1 == 'psr') | (class1 == 'pwn') | (class1 == 'snr') | \
+                 (class1 == 'spp') | (class1 == 'SFR') | (class1 == 'HMB') | \
+                 (class1 == 'LMB') | (class1 == 'NOV') | (class1 == 'BIN') | \
+                 (class1 == 'lmb') | (class1 == 'SPP') | (class1 == 'hmb') | \
+                 (class1 == 'glc') 
+    
+    logger.info('Found %i galactic sources...'%sum(class_mask))
+    GLON = SOURCES.field('GLON')[class_mask]
+    GLAT = SOURCES.field('GLAT')[class_mask]
+    x, y, z = hp.rotator.dir2vec(GLON, GLAT, lonlat=True)
+    bad_pix = list(hp.pixelfunc.vec2pix(nside, x, y, z))
+        
+    bad_pix_inrad = []
+    for bn in bad_pix:
+        pixVec = hp.pix2vec(nside, bn)
+        radintpix = hp.query_disc(nside, pixVec, RADrad)
+        bad_pix_inrad.extend(radintpix)
+    bad_pix.extend(bad_pix_inrad)
+    
+    src_cat.close()
+    
+    return bad_pix
 
 def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
     """Returns the 'bad pixels' defined by the position of a source and a
