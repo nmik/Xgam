@@ -168,8 +168,11 @@ def mkCross(**kwargs):
         emin = float(emin_str.group(0).replace('-',''))
         emax_str = re.search(r'%s'%EMAX_STR, m1_f)
         emax = float(emax_str.group(0).replace('.fits', ''))
-        wb_spline = get_1D_wbeam(fermi_wb_matrix, spec, e_min=emin, e_max=emax)
-        wb = wb_spline(np.arange(l_max))
+        if fermi_wb_matrix:
+            wb_spline = get_1D_wbeam(fermi_wb_matrix, spec, e_min=emin, e_max=emax)
+            wb = wb_spline(np.arange(l_max))
+        else:
+            wb = np.ones(l_max)
         if kwargs['show']:
             wb_spline.plot(show=False, label='%.2f-%.2f GeV'%(emin/1000, emax/1000), color='0.3')
             plt.ylabel('W$_{beam}$', size=15)
