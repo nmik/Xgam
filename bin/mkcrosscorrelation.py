@@ -159,7 +159,9 @@ def mkCross(**kwargs):
         nside = hp.npix2nside(len(fermi_map))
         wpix = hp.wpix = hp.sphtfunc.pixwin(nside, lmax=l_max-1)
         if len(wpix) < l_max:
+            logger.info('-----------------------------')
             logger.info('ATT: Setting new l_max=%i ...'%len(wpix))
+            logger.info('-----------------------------')
             l_max = len(wpix)
 		
         logger.info('Computing the fermi beam window function ...')
