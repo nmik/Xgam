@@ -168,7 +168,6 @@ def get_2D_wbeam(wb_file, show=False):
     	
     """
     en_, l_, _z_ = wbeam_parse(wb_file)
-    print(len(en_), len(l_), len(_z_))
     fmt = dict(xname='$l$', xunits='', yname='Energy',
                              yunits='MeV', zname='W$_{beam}$(E,$l$)')
     wbeam = xInterpolatedBivariateSplineLinear(l_, en_, _z_, **fmt)
