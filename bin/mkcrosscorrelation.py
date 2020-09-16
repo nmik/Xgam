@@ -232,7 +232,7 @@ def mkCross(**kwargs):
                                               wl_array = wl, rebin=True,
                                               nbin=bin_num, bin_type=bin_alg,
                                               lmin=lmin, lmax=lmax,
-                                              custom_bins=bin_custom, 
+                                              custom_bins=bin_custom,  
                                               show=kwargs['show'])                      
         else:
             _l, _cl, _cl_err, _cov = pol_cl_calculation(pol_dict, config_file_name, 
