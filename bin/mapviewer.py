@@ -61,6 +61,7 @@ def maps_view(**kwargs):
     """Viewer interface for healpix maps                                                                                                                                                             
     """
     TITLE = kwargs['title']
+    print(TITLE)
     NORM = kwargs['norm']
     MAXVAL = kwargs['maxval']
     MINVAL = kwargs['minval']
@@ -71,6 +72,7 @@ def maps_view(**kwargs):
     UNIT = kwargs['unit']
     SMOOTH = kwargs['smoothing']
     input_file = kwargs['infile']
+    file_name = os.path.basename(input_file)
     if not os.path.exists(input_file):
         abort("Map %s not found!"%input_file)
     healpix_maps = hp.read_map(input_file)
@@ -88,7 +90,7 @@ def maps_view(**kwargs):
     if kwargs['save'] == True:
     	if not os.path.exists(os.path.join(X_OUT, 'figs')):
     		os.system('mkdir %s' %os.path.join(X_OUT, 'figs'))
-    	out_name = os.path.join(X_OUT, 'figs', TITLE.replace(' ', '_'))
+    	out_name = os.path.join(X_OUT, 'figs', file_name.replace('fits', 'png'))
     	plt.savefig(out_name)
     plt.show()
 	
