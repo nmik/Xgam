@@ -19,6 +19,13 @@ import matplotlib.pyplot as plt
 
 from Xgam.utils.logging_ import logger
 
+def apply_mask(map_, mask_):
+    """ Applies a mask to a map
+    """
+    map_masked = hp.ma(map_)
+    map_masked.mask = np.logical_not(mask_)
+    return map_masked
+
 def mask_galactic_src(cat_file, mask_rad, nside):
     """Returns the 'bad pixels' defined by the position of a galactic source and a
        certain radius away from that point.
