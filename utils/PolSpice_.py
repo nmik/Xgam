@@ -26,6 +26,29 @@ from matplotlib import pyplot as plt
 from Xgam import X_OUT
 from Xgam.utils.logging_ import logger
 
+def transform_coords_rotator(lon, lat, coord_in, coord_out):
+    '''
+    Convert between astronomical coordinate systems.
+    
+    All inputs and outputs are in degrees.
+    
+    Valid values for coord_in and coord_out are
+      'G' for 'Galactic'                (l, b)
+      'C' for 'Celestial'/'Equatorial'  (ra, dec)
+      'E' for 'Ecliptic'                (lon, lat)
+    '''
+    
+    rot = hp.rotator.Rotator(coord=[coord_in, coord_out])
+    
+    t_in = np.radians(90. - lat)
+    p_in = np.radians(lon)
+    
+    t_out, p_out = rot(t_in, p_in)
+    lon_out = np.degrees(p_out)
+    lat_out = 90. - np.degrees(t_out)
+    
+    return lon_out, lat_out
+    
 def change_coord(m, coord):
     """
     Define the new binning.
@@ -329,7 +352,7 @@ def pol_cov_parse(pol_cov_out_file, wl_array=None, rebin=None, nbin=25, bin_type
         wl = wl_array
         _cov = np.array([_cov[i][:lmax] for i in range(0, lmax)])
         _cov = _cov/(wl[:lmax]**2)
-        for l in _l:
+        for l in range(lmax):
             _cov[l] = _cov[l]/(wl[l]**2)
     if rebin:
         _covr = []
