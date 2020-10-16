@@ -186,7 +186,9 @@ def mkCross(**kwargs):
         # ------- TO BE DEFINED ------
         if lss_wb_ is not None:
             logger.info('Getting the LSS beam window function ...')
-            lss_wb = np.ones(len(wb))
+            lss_wb = lss_wb_[i][:l_max]
+        else:
+            lss_wb = np.ones(l_max)
             
         cl_txt.write('MAP1 ---> %s\n'%(m1_f))
         cl_txt.write('MAP2 ---> %s\n'%(m2_f))
