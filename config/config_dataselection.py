@@ -89,6 +89,8 @@ GTLTCUBE_DICT = {'evfile': 'DEFAULT',
 
 GTEXPCUBE2_DICT = {'infile': 'DEFAULT',
                    'cmap': 'DEFAULT',
+                   'hpx_ordering_scheme': 'RING',
+                   'hpx_order': HPX_MAP_ORDER,
                    'irfs': IRFS,
                    'evtype': EVTYPE,
                    'outfile': 'DEFAULT',
