@@ -40,6 +40,8 @@ PARSER.add_argument('-c', '--config', type=str, required=True,
 PARSER.add_argument('--srcmask', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='sources mask activated')
+PARSER.add_argument('--srcfluxthreshold', type=float, default=None,
+                    help='will select only sources with "Flux1000" above threshold [cm-2s-1]')
 PARSER.add_argument('--galsrcmask', type=ast.literal_eval, choices=[True, False],
                     default=False,
                     help='Mask arr the galactic sources with 2 deg disk')
@@ -96,7 +98,8 @@ def mkMask(**kwargs):
         from Xgam.utils.mkmask_ import mask_src
         src_mask_rad = data.SRC_MASK_RAD
         cat_file = data.SRC_CATALOG
-        bad_pix += mask_src(cat_file, src_mask_rad, nside)
+        flux_th = kwargs['srcfluxthreshold']
+        bad_pix += mask_src(cat_file, src_mask_rad, nside, FLUX_THRESHOLD=flux_th)
     if kwargs['galsrcmask'] == True:
         from Xgam.utils.mkmask_ import mask_galactic_src
         cat_file = data.SRC_CATALOG
