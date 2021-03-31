@@ -284,37 +284,43 @@ def main():
         out_wbeam_txt = os.path.join(X_OUT, 'P8R3_SOURCEVETO_V2_evt56_wbeam.txt')
         wb_2d = get_2D_wbeam(out_wbeam_txt, show=True)
         
-        wpix = hp.sphtfunc.pixwin(1024)
+        wpix = hp.sphtfunc.pixwin(256)
         
         logger.info('Wait...computing integral Wbeam at some energy intervals!')
         gamma = 2.3
         spec = get_powerlaw_spline(gamma)
         
-        _emin = np.array([631.0,1202.3,2290.9,4786.3,9120.1,17378.0,36307.8,69183.1,131825.7])
-        _emax =  np.array([1202.3,2290.9,4786.3,9120.1,17378.0,36307.8,69183.1,131825.7,1000000])
+#         _emin = np.array([631.0,1202.3,2290.9,4786.3,9120.1,17378.0,36307.8,69183.1,131825.7])
+#         _emax =  np.array([1202.3,2290.9,4786.3,9120.1,17378.0,36307.8,69183.1,131825.7,1000000])
+        _emin = np.array([1000.0, 2089.30, 4786.30, 10964.78])
+        _emax =  np.array([2089.30, 4786.30, 10964.78, 25118.86])
         
         c = ['0.1', '0.2','0.4','0.5','0.6','0.7','0.8','0.9','0.95']
+        c = ['0.1', '0.4','0.6','0.8','0.95']
+
         fig = plt.figure(facecolor='white')
         
         wb_ = []
         plot = fig.add_subplot(111)
-        plt.plot(np.arange(2000), wpix[:2000], '--', color='silver', label='W$_{pix}$')
+        plt.plot(np.arange(768), wpix[:768], '--', color='red', label='W$_{pix}$ (NSIDE=256)')
         for i, (emin, emax) in enumerate(zip(_emin, _emax)):
             wb = get_1D_wbeam(out_wbeam_txt, spec, e_min=emin, e_max=emax)
             wb_.append(wb.y)
             print('wl(l=1)**2 = %e'%(wb(2)*wpix[1])**2)
             wb.plot(show=False, label='%.2f-%.2f GeV'%(emin/1000, emax/1000), color='%s'%c[i])
             
-        plt.ylabel('W$_{beam}$', size=15)
-        plt.xlabel('$l$', size=15)
+        plt.ylabel('W$_{beam}$', size=18)
+        plt.xlabel('$l$', size=18)
         plt.ylim(-1,1.1)
         plt.xlim(0, 1500)
-        plt.legend(loc=3, fontsize=10, fancybox=True)
+        plt.legend(loc=3, fontsize=15, fancybox=True)
         plot.tick_params(axis='both', which='major', labelsize=14)
         #plt.grid('off')
         
-        txt_f = 'output/Wbeam_SV_t56_DESbinning.txt'
-        np.savetxt(txt_f, np.array(wb_).T, header='E1\tE2\tE3\tE4\tE5\tE6\tE7\tE8\tE9')
+        txt_f = 'output/Wbeam_SV_t56_gxn_allbins.txt'
+        np.savetxt(txt_f, np.array(wb_).T, header='ell, wbeam(l) (E1, E2, E3, E4)')
+#         np.savetxt(txt_f, np.array(wb_).T, header='E1\tE2\tE3\tE4\tE5\tE6\tE7\tE8\tE9')
+
         
         
         plt.show()
