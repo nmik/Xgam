@@ -126,7 +126,7 @@ def pol_ccf_parse(pol_ccf_out_file, pol_cov_out_file, rebin=None, pol='circular'
     th_, ccf_ = [], []
     for line in f:
         try:
-            th, ccf = [float(item) for item in line.split()]
+            th, cos, ccf = [float(item) for item in line.split()]
             th_.append(th)
             ccf_.append(ccf)
         except:
@@ -140,6 +140,8 @@ def pol_ccf_parse(pol_ccf_out_file, pol_cov_out_file, rebin=None, pol='circular'
     #NOTE: think about Wl and Wpix correction!
     ccf_cov_ = np.zeros(np.shape(_cov))
     Pl_ = []
+    print(_cov.shape)
+    l = np.arange(int(np.sqrt(len(_cov))))
     if pol == 'circular':
         A=(2.*l+1.)/(4.*np.pi)
         leg_ord = 1
@@ -163,7 +165,7 @@ def pol_ccf_parse(pol_ccf_out_file, pol_cov_out_file, rebin=None, pol='circular'
     ccf_cov_ = ccf_cov_ + np.transpose(ccf_cov_)
     idx_diag = np.diag_indices(len(ccf_cov_))
     ccf_cov_[idx_diag] = ccf_cov_[idx_diag]/2.0
-
+    ccferr_ = np.sqrt(ccf_cov_[idx_diag])
     return th_, ccf_, ccferr_, ccf_cov_
 
 def pol_create_config(pol_dict, config_file_name):
