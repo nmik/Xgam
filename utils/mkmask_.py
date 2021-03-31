@@ -69,7 +69,7 @@ def mask_galactic_src(cat_file, mask_rad, nside):
     
     return bad_pix
 
-def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
+def mask_src(CAT_FILE, MASK_S_RAD, NSIDE, FLUX_THRESHOLD=None):
     """Returns the 'bad pixels' defined by the position of a source and a
        certain radius away from that point.
 
@@ -79,6 +79,9 @@ def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
            radius around each source definig bad pixels to mask
        NSIDE: int
            healpix nside parameter
+       FLUX_TRHRESHOLD: float
+           threshold in Integral photon flux from 1 to 100 GeV to mask sources;
+           only sources with 'Flux1000' > FLUX_TRHRESHOLD will be masked.
     """
     logger.info('Mask for sources activated')
     src_cat = pf.open(CAT_FILE)
@@ -88,11 +91,16 @@ def mask_src(CAT_FILE, MASK_S_RAD, NSIDE):
     SOURCES = CAT.data
     RADrad = np.radians(MASK_S_RAD)
     for i in range (0,len(SOURCES)-1):
-        GLON = SOURCES.field('GLON')[i]
-        GLAT = SOURCES.field('GLAT')[i]
-        x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
-        b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
-        BAD_PIX_SRC.append(b_pix)
+        FLUX1000 = SOURCES.field('Flux1000')[i]
+        if FLUX_THRESHOLD is not None:
+            if FLUX1000 < FLUX_THRESHOLD:
+                continue
+            else:
+                GLON = SOURCES.field('GLON')[i]
+                GLAT = SOURCES.field('GLAT')[i]
+                x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
+                b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+                BAD_PIX_SRC.append(b_pix)
     BAD_PIX_inrad = []
     for bn in BAD_PIX_SRC:
         pixVec = hp.pix2vec(NSIDE,bn)
