@@ -270,7 +270,7 @@ def mkRestyle(**kwargs):
                     micro_fluxerr_forsesub = micro_sqrtcount_forsesub/time_sum_exp_[b]/sr
                 else:
                     fore_norm_flux = micro_fore_N_[b]*micro_fore_map_[b]
-                    fore_norm_count = (fore_norm_flux*time_sum_exp_[b]*sr).astype(int)
+                    fore_norm_count = (fore_norm_flux*time_sum_exp_[b]*sr)#.astype(int)
                     micro_flux_forsesub = micro_time_sum_flux - fore_norm_flux
                     micro_count_forsesub = time_sum_cnt_[b]-fore_norm_count
                     micro_count_forsesub[micro_count_forsesub<0] = 0
