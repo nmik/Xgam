@@ -37,7 +37,7 @@ formatter = argparse.ArgumentDefaultsHelpFormatter
 PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
 PARSER.add_argument('-c', '--config', type=str, required=True,
-                    help='the input configuration file')
+                    help='the configuration file used for mkdatafluxmaps: this will take the energy binning defined there!')
 PARSER.add_argument('--irfs', type=str, required=False,
                     help='The Fermi-LAT IRFs to consider')
 PARSER.add_argument('--evtype', type=int, required=False,
