@@ -9,6 +9,7 @@ week_in = 9
 week_out = 745
 gll_psc_v = 30
 num_workers=None
+base_path="/path/to/directory/fermi"
 
 download_photon_data=True
 download_spacecraft_data=True
@@ -64,7 +65,7 @@ def download_parallel(iter, total, num_workers=None):
     return res
 
 #%% download photon data
-download_folder = "/data/users/Aurelio/fermi/photon"
+download_folder = f"{base_path}/photon"
 os.makedirs(download_folder, exist_ok=True)
 
 urls = []
@@ -81,7 +82,7 @@ if download_photon_data:
     download_parallel(inputs, len(urls), num_workers=num_workers)
     print("done")
 #%% download spacecraft
-download_folder = "/data/users/Aurelio/fermi/spacecraft"
+download_folder = f"{base_path}/spacecraft"
 os.makedirs(download_folder, exist_ok=True)
 
 url = "https://heasarc.gsfc.nasa.gov/FTP/fermi/data/lat/mission/spacecraft/lat_spacecraft_merged.fits"
@@ -94,7 +95,7 @@ if download_spacecraft_data:
     download_url(inputs)
     print("done")
 #%% download 4FGL sources
-download_folder = "/data/users/Aurelio/fermi/4FGL"
+download_folder = f"{base_path}/4FGL"
 os.makedirs(download_folder, exist_ok=True)
 url = f"https://fermi.gsfc.nasa.gov/ssc/data/access/lat/12yr_catalog/gll_psc_v{gll_psc_v}.fit"
 destination = f"{download_folder}/gll_psc_v{gll_psc_v}.fit"
