@@ -90,17 +90,18 @@ def mask_src(CAT_FILE, MASK_S_RAD, NSIDE, FLUX_THRESHOLD=None):
     BAD_PIX_SRC = []
     SOURCES = CAT.data
     RADrad = np.radians(MASK_S_RAD)
+    print('DELMEEEEEEEEE', len(SOURCES))
     for i in range (0,len(SOURCES)-1):
-        FLUX1000 = SOURCES.field('Flux1000')[i]
         if FLUX_THRESHOLD is not None:
+            FLUX1000 = SOURCES.field('Flux1000')[i]
             if FLUX1000 < FLUX_THRESHOLD:
                 continue
-            else:
-                GLON = SOURCES.field('GLON')[i]
-                GLAT = SOURCES.field('GLAT')[i]
-                x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
-                b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
-                BAD_PIX_SRC.append(b_pix)
+        else:
+            GLON = SOURCES.field('GLON')[i]
+            GLAT = SOURCES.field('GLAT')[i]
+            x, y, z = hp.rotator.dir2vec(GLON,GLAT,lonlat=True)
+            b_pix= hp.pixelfunc.vec2pix(NSIDE, x, y, z)
+            BAD_PIX_SRC.append(b_pix)
     BAD_PIX_inrad = []
     for bn in BAD_PIX_SRC:
         pixVec = hp.pix2vec(NSIDE,bn)
