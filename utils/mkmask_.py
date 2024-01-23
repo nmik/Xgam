@@ -90,7 +90,6 @@ def mask_src(CAT_FILE, MASK_S_RAD, NSIDE, FLUX_THRESHOLD=None):
     BAD_PIX_SRC = []
     SOURCES = CAT.data
     RADrad = np.radians(MASK_S_RAD)
-    print('DELMEEEEEEEEE', len(SOURCES))
     for i in range (0,len(SOURCES)-1):
         if FLUX_THRESHOLD is not None:
             FLUX1000 = SOURCES.field('Flux1000')[i]
